@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import AddToCartButton from "@/components/cart/AddToCartButton";
+import { getCatalogCategoryLabel } from "@/lib/catalog";
 
 type ProductCardProps = {
   id: number;
@@ -27,14 +28,14 @@ export default function ProductCard({
         <Link href={`/products/${slug}`} className="block">
           <div className="relative h-64 bg-[#0F172A]">
           <Image
-            src={image || "/placeholder.png"}
+            src={image || "/placeholder.svg"}
             alt={name}
             fill
             className="object-contain p-6 transition duration-500 group-hover:scale-110"
           />
 
           <span className="absolute left-4 top-4 rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white">
-            {category}
+            {getCatalogCategoryLabel(category)}
           </span>
           </div>
         </Link>

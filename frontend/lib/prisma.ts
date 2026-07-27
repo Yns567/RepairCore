@@ -1,4 +1,4 @@
-import { PrismaClient } from "@/lib/generated/prisma/client";
+import { PrismaClient } from "@/lib/generated/prisma";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 const adapter = new PrismaPg({
@@ -10,7 +10,7 @@ const globalForPrisma = globalThis as {
   prismaSchemaVersion?: string;
 };
 
-const schemaVersion = "2026-07-11-guest-cart";
+const schemaVersion = "2026-07-27-gsm-services-idempotency";
 
 // During development, Fast Refresh keeps global state alive. Recreate the
 // client after a Prisma schema change so new delegates (such as `cart`) exist.

@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-export default function SearchBar() {
+export default function SearchBar({ path = "/store" }: { path?: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -15,9 +15,9 @@ export default function SearchBar() {
     e.preventDefault();
 
     if (search.trim()) {
-      router.push(`/store?search=${encodeURIComponent(search)}`);
+      router.push(`${path}?search=${encodeURIComponent(search)}`);
     } else {
-      router.push("/store");
+      router.push(path);
     }
   }
 
@@ -28,7 +28,7 @@ export default function SearchBar() {
         placeholder="Search products..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="w-full rounded-xl border border-gray-300 px-5 py-3 outline-none focus:border-blue-500"
+        className="w-full rounded-xl border border-slate-700 bg-[#111827] px-5 py-3 text-white outline-none placeholder:text-slate-500 focus:border-blue-500"
       />
     </form>
   );

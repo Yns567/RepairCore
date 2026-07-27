@@ -1,66 +1,64 @@
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { deleteProduct } from "./actions";
+import Link from "next/link";
 
-export default async function AdminProductsPage() {
+export default async function ProductsPage() {
   const products = await prisma.product.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
+    orderBy: { createdAt: "desc" },
   });
 
   return (
-    <main className="max-w-7xl mx-auto px-6 py-10">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold">
-          Products Management
-        </h1>
-
+    <main className="text-slate-200">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Products</h1>
         <Link
           href="/admin/products/new"
-          className="bg-blue-600 text-white px-5 py-2 rounded-lg"
+          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500"
         >
-          Add Product
+          + Add Product
         </Link>
       </div>
 
-      <table className="w-full border">
-        <thead>
-          <tr className="border-b bg-gray-100">
-            <th className="p-3 text-left">Name</th>
-            <th className="p-3 text-left">Category</th>
-            <th className="p-3 text-left">Price</th>
-            <th className="p-3 text-left">Stock</th>
-            <th className="p-3 text-left">Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {products.map((product) => (
-            <tr key={product.id} className="border-b">
-              <td className="p-3">{product.name}</td>
-              <td className="p-3">{product.category}</td>
-              <td className="p-3">
-                ${product.price.toString()}
-              </td>
-              <td className="p-3">{product.stock}</td>
-              <td className="p-3 flex gap-3">
-                <a
-                  href={`/admin/products/${product.id}/edit`}
-                  className="text-blue-600 hover:underline"
-                >
-                  Edit
-                </a>
-                <form action={deleteProduct.bind(null, product.id)} className="inline">
-                  <button type="submit" className="text-red-600 hover:underline">
-                    Delete
-                  </button>
-                </form>
-              </td>
+      <div className="overflow-hidden rounded-xl border border-slate-800">
+        <table className="w-full">
+          <thead className="bg-slate-950">
+            <tr>
+              <th className="p-4 text-left">Name</th>
+              <th className="p-4 text-left">Category</th>
+              <th className="p-4 text-left">Price</th>
+              <th className="p-4 text-left">Stock</th>
+              <th className="p-4 text-left">Status</th>
+              <th className="p-4"></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {products.map((product) => (
+              <tr key={product.id} className="border-t border-slate-800">
+                <td className="p-4">{product.name}</td>
+                <td className="p-4">{product.category ?? "—"}</td>
+                <td className="p-4">${Number(product.price).toFixed(2)}</td>
+                <td className="p-4">{product.stock}</td>
+                <td className="p-4">{product.status}</td>
+                <td className="p-4">
+                  <Link
+                    href={`/admin/products/${product.id}/edit`}
+                    className="text-blue-400 hover:underline"
+                  >
+                    Edit
+                  </Link>
+                </td>
+              </tr>
+            ))}
+
+            {products.length === 0 && (
+              <tr>
+                <td colSpan={6} className="p-6 text-center text-slate-500">
+                  No products yet.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </main>
   );
 }

@@ -1,11 +1,13 @@
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../lib/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
 }
+
+// ---------- Catalog ----------
 
 model Product {
   id          Int      @id @default(autoincrement())
@@ -14,7 +16,7 @@ model Product {
 
   description String?
 
-  price       Decimal
+ price       Decimal
 
   stock       Int      @default(0)
 
@@ -31,14 +33,15 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  CartItems   CartItem[]
+  CartItems    CartItem[]
+  OrderItems   OrderItem[]
 }
 
 model Cart {
-  id        Int        @id @default(autoincrement())
-  sessionId String     @unique
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id        Int      @id @default(autoincrement())
+  sessionId String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   items     CartItem[]
 }
@@ -74,4 +77,261 @@ model Brand {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ---------- Auth / Users ----------
+
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String    @unique
+  emailVerified  DateTime?
+  image          String?
+  hashedPassword String?
+  role           String    @default("CUSTOMER") // CUSTOMER | ADMIN
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  accounts       Account[]
+  sessions       Session[]
+  orders         Order[]
+  subscriptions  Subscription[]
+  enrollments    Enrollment[]
+  wallet         Wallet?
+  gsmServiceOrders GsmServiceOrder[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ---------- Orders (store checkout) ----------
+
+model Order {
+  id          Int         @id @default(autoincrement())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+
+  status      String      @default("PENDING") // PENDING | PAID | SHIPPED | COMPLETED | CANCELLED
+  paymentMethod String    @default("COD") // COD | BALANCE
+  total       Decimal
+
+  fullName    String
+  phone       String
+  address     String
+  city        String
+  notes       String?
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  items       OrderItem[]
+}
+
+// ---------- Store credit / wallet ----------
+
+model Wallet {
+  id        Int      @id @default(autoincrement())
+  userId    String   @unique
+  balance   Decimal  @default(0)
+  currency  String   @default("USD")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions WalletTransaction[]
+}
+
+model WalletTransaction {
+  id           Int      @id @default(autoincrement())
+  walletId     Int
+  type         String   // CREDIT | DEBIT | REFUND | ADJUSTMENT
+  amount       Decimal  // Always a positive amount; type determines direction.
+  balanceAfter Decimal
+  description  String
+  referenceType String?
+  referenceId  String?
+  createdById  String?
+  createdAt    DateTime @default(now())
+
+  wallet Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId, createdAt])
+  @@index([referenceType, referenceId])
+}
+
+// ---------- GSM services ----------
+
+model GsmService {
+  id            Int      @id @default(autoincrement())
+  name          String
+  slug          String   @unique
+  description   String?
+  category      String   // IMEI | SERVER_CREDIT | TOOL_RENTAL
+  provider      String?
+  inputType     String   @default("NONE") // IMEI | USERNAME | NONE
+  estimatedTime String
+  price         Decimal
+  image         String?
+  status        String   @default("ACTIVE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  orders GsmServiceOrder[]
+
+  @@index([category, status])
+}
+
+model GsmServiceOrder {
+  id                       Int      @id @default(autoincrement())
+  clientRequestId          String?  @unique
+  userId                   String
+  serviceId                Int
+  status                   String   @default("PENDING") // PENDING | PROCESSING | COMPLETED | REJECTED | CANCELLED
+  price                    Decimal
+  imei                     String?
+  accountUsername          String?
+  deviceModel              String?
+  notes                    String?
+  result                   String?
+  authorizationConfirmedAt DateTime
+  refundedAt               DateTime?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  user    User       @relation(fields: [userId], references: [id])
+  service GsmService @relation(fields: [serviceId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+}
+
+model OrderItem {
+  id         Int      @id @default(autoincrement())
+  quantity   Int      @default(1)
+  unitPrice  Decimal
+
+  orderId    Int
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId  Int
+  product    Product  @relation(fields: [productId], references: [id])
+}
+
+// ---------- Software subscriptions / rentals ----------
+
+model SubscriptionPlan {
+  id            Int      @id @default(autoincrement())
+  name          String
+  slug          String   @unique
+  description   String?
+
+  billingPeriod String   // MONTHLY | YEARLY | RENTAL_DAY | RENTAL_WEEK
+  price         Decimal
+
+  softwareName  String   // e.g. "Z3X", "UMT", "Chimera"
+  isRental      Boolean  @default(false)
+
+  status        String   @default("ACTIVE")
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id         Int              @id @default(autoincrement())
+  userId     String
+  user       User             @relation(fields: [userId], references: [id])
+
+  planId     Int
+  plan       SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  status     String           @default("ACTIVE") // ACTIVE | EXPIRED | CANCELLED
+  startDate  DateTime         @default(now())
+  endDate    DateTime
+
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+}
+
+// ---------- Learning (courses) ----------
+
+model Course {
+  id          Int          @id @default(autoincrement())
+  title       String
+  slug        String       @unique
+  description String?
+  image       String?
+  price       Decimal      @default(0) // 0 = free
+
+  level       String       @default("BEGINNER") // BEGINNER | INTERMEDIATE | ADVANCED
+  status      String       @default("ACTIVE")
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  lessons     Lesson[]
+  enrollments Enrollment[]
+}
+
+model Lesson {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String?
+  videoUrl  String?
+  order     Int      @default(0)
+
+  courseId  Int
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model Enrollment {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  courseId  Int
+  course    Course   @relation(fields: [courseId], references: [id])
+
+  progress  Int      @default(0) // % complete
+  createdAt DateTime @default(now())
+
+  @@unique([userId, courseId])
 }

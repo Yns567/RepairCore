@@ -6,10 +6,10 @@ import {
   Search,
   Heart,
   ShoppingCart,
-  Menu,
   Wrench,
 } from "lucide-react";
 import { getCart, getCartItemCount } from "@/lib/cart";
+import MobileNav from "./MobileNav";
 
 export default async function Navbar() {
   const cart = await getCart();
@@ -28,7 +28,7 @@ export default async function Navbar() {
           </span>
         </Link>
 
-        <div className="relative hidden flex-1 md:block">
+        <form action="/store" className="relative hidden flex-1 md:block">
           <Search
             size={18}
             className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -36,11 +36,12 @@ export default async function Navbar() {
 
           <input
             type="text"
+            name="search"
             placeholder="Search products..."
             className="w-full rounded-lg border border-slate-800 bg-[#121a27] py-2.5 pl-11 pr-11 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-blue-500"
           />
           <Search size={17} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300" />
-        </div>
+        </form>
 
         <div className="ml-auto hidden items-center gap-5 text-sm md:flex">
           <button className="flex items-center gap-1.5 font-medium text-slate-200 hover:text-white">
@@ -60,24 +61,24 @@ export default async function Navbar() {
           </Link>
         </div>
 
-        <button className="ml-auto text-slate-300 md:hidden" aria-label="Open navigation">
-          <Menu size={25} />
-        </button>
+        <MobileNav cartItemCount={cartItemCount} />
       </div>
 
       <div className="hidden border-t border-slate-800 lg:block">
-        <div className="mx-auto flex h-[49px] max-w-7xl items-center gap-7 px-6 text-[12px] font-medium text-slate-300">
+        <div className="mx-auto flex h-[49px] max-w-7xl items-center gap-4 px-6 text-[11px] font-medium text-slate-300 xl:text-[12px]">
           <Link href="/store" className="flex h-8 items-center gap-2 rounded-md bg-blue-600 px-4 text-white shadow-lg shadow-blue-900/30 transition hover:bg-blue-500">
             <Grid2X2 size={15} /> All Categories <ChevronDown size={14} />
           </Link>
-          <Link href="/software" className="transition hover:text-blue-400">Programmers</Link>
-          <Link href="/software" className="transition hover:text-blue-400">Boxes</Link>
-          <Link href="/hardware" className="transition hover:text-blue-400">Tools</Link>
-          <Link href="/store" className="transition hover:text-blue-400">Spare Parts</Link>
-          <Link href="/store" className="transition hover:text-blue-400">Accessories</Link>
-          <Link href="/store" className="transition hover:text-blue-400">New Arrivals</Link>
-          <Link href="/store" className="transition hover:text-blue-400">Brands</Link>
-          <Link href="/account" className="transition hover:text-blue-400">Contact Us</Link>
+          <Link href="/store?category=programmers" className="transition hover:text-blue-400">Programmers</Link>
+          <Link href="/store?category=boxes" className="transition hover:text-blue-400">Boxes</Link>
+          <Link href="/store?category=tools" className="transition hover:text-blue-400">Tools</Link>
+          <Link href="/store?category=spare-parts" className="transition hover:text-blue-400">Spare Parts</Link>
+          <Link href="/store?category=accessories" className="transition hover:text-blue-400">Accessories</Link>
+          <span className="h-5 w-px bg-slate-700" aria-hidden />
+          <Link href="/services?category=IMEI" className="font-semibold text-blue-300 transition hover:text-blue-200">IMEI Services</Link>
+          <Link href="/services?category=SERVER_CREDIT" className="font-semibold text-blue-300 transition hover:text-blue-200">Credits</Link>
+          <Link href="/services?category=TOOL_RENTAL" className="font-semibold text-blue-300 transition hover:text-blue-200">Tool Rent</Link>
+          <Link href="/contact" className="transition hover:text-blue-400">Contact Us</Link>
         </div>
       </div>
     </header>

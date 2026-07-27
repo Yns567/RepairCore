@@ -51,20 +51,20 @@ export default async function ProductPage({ params }: PageProps) {
           <div className="grid grid-cols-[58px_minmax(0,1fr)] gap-3 sm:grid-cols-[72px_minmax(0,1fr)] sm:gap-5">
             <div className="flex flex-col gap-3 pt-3">
               <div className="relative aspect-square overflow-hidden rounded-lg border-2 border-blue-600 bg-slate-50 p-1.5">
-                <Image src={product.image || "/placeholder.png"} alt="" fill sizes="72px" className="object-contain" />
+                <Image src={product.image || "/placeholder.svg"} alt="" fill sizes="72px" className="object-contain" />
               </div>
               <div className="relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-1.5 opacity-65">
-                <Image src={product.image || "/placeholder.png"} alt="" fill sizes="72px" className="object-contain" />
+                <Image src={product.image || "/placeholder.svg"} alt="" fill sizes="72px" className="object-contain" />
               </div>
               <div className="relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-1.5 opacity-40">
-                <Image src={product.image || "/placeholder.png"} alt="" fill sizes="72px" className="object-contain" />
+                <Image src={product.image || "/placeholder.svg"} alt="" fill sizes="72px" className="object-contain" />
               </div>
             </div>
 
             <div className="relative flex min-h-[310px] items-center justify-center overflow-hidden rounded-xl bg-[#f7f9fd] p-6 sm:min-h-[455px] sm:p-10">
               <div className="absolute h-4/5 w-4/5 rounded-full bg-blue-100/70 blur-3xl" />
               <Image
-                src={product.image || "/placeholder.png"}
+                src={product.image || "/placeholder.svg"}
                 alt={product.name}
                 fill
                 priority

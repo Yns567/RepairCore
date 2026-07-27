@@ -32,12 +32,19 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
 
+# local Neon CLI project link
+/.neon
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local development server logs
+/dev-server*.log
 
 /lib/generated/prisma

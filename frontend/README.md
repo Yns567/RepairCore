@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RepairCore
 
-## Getting Started
+RepairCore is a Next.js storefront for mobile-repair technicians. It includes:
 
-First, run the development server:
+- Hardware products, categories, cart, checkout and customer orders
+- Software subscriptions and short-term tool rentals
+- Internal USD store balance with an immutable transaction history
+- IMEI/device checks, external tool-credit packs and rental requests
+- Customer and administrator dashboards
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+RepairCore does not offer IMEI alteration or spoofing, and service orders require
+the customer to confirm ownership or authorization.
+
+## Local setup
+
+Requirements: Node.js, PostgreSQL and npm.
+
+1. Copy `.env.example` to `.env` and enter the local database URL and strong secrets.
+2. Install packages with `npm install`.
+3. Apply the database migrations:
+
+   ```powershell
+   npx prisma migrate deploy
+   ```
+
+4. Add the demo catalog:
+
+   ```powershell
+   npm run db:seed
+   ```
+
+5. Create the first administrator:
+
+   ```powershell
+   $env:ADMIN_EMAIL="owner@example.com"
+   $env:ADMIN_PASSWORD="choose-a-long-unique-password"
+   npm run admin:create
+   ```
+
+6. Start the site on the computer and local Wi-Fi:
+
+   ```powershell
+   npm run dev -- --hostname 0.0.0.0 --port 3001
+   ```
+
+Open `http://localhost:3001`. A phone on the same Wi-Fi can use the computer's
+local IPv4 address, for example `http://192.168.1.20:3001`.
+
+## Production checks
+
+Before every deployment:
+
+```powershell
+npm run lint
+npx tsc --noEmit
+npm run build
+npx prisma migrate deploy
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Keep `.env` private. Production must use unique values for `AUTH_SECRET`,
+`NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` and `DATA_ENCRYPTION_KEY`. Rotating
+`DATA_ENCRYPTION_KEY` without migrating existing records makes encrypted IMEI
+values unreadable.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Free internet demo
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The simplest demo stack for this project is:
 
-## Learn More
+- [Vercel Hobby](https://vercel.com/docs/plans/hobby) for Next.js and the free
+  `*.vercel.app` HTTPS address
+- [Neon Free](https://neon.com/pricing) for PostgreSQL
 
-To learn more about Next.js, take a look at the following resources:
+Vercel Hobby is intended for personal, non-commercial use. Use it only to test
+the site; move to a commercial plan before accepting real orders or payments.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Deployment outline:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Create a Neon project and copy both the pooled and direct connection strings.
+2. Add all values from `.env.example` to the Vercel project's environment variables.
+3. Set `DATABASE_URL` to the pooled Neon URL and `DIRECT_URL` to the direct URL.
+4. Apply migrations and seed data against Neon from this project folder.
+5. Import the GitHub repository into Vercel and deploy it.
+6. Set `AUTH_URL` and `NEXT_PUBLIC_SITE_URL` to the final `https://...vercel.app`
+   address, then redeploy.
 
-## Deploy on Vercel
+For a commercial store, a paid hosting plan and a purchased domain are safer than
+a free-domain service. A platform subdomain is the most reliable free test address.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Product images
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Only images with clear reuse terms should be published. Attribution for the
+licensed demo photographs is available at `/image-credits`. Branded products keep
+the neutral placeholder until the supplier provides authorized product photos.

@@ -10,41 +10,37 @@ export type CartActionResult = {
   itemCount?: number;
 };
 
-function isValidId(value: number) {
+function isPositiveInteger(value: number) {
   return Number.isSafeInteger(value) && value > 0;
 }
 
-function refreshCartViews() {
+function refreshCart() {
   revalidatePath("/", "layout");
   revalidatePath("/cart");
+  revalidatePath("/store");
+  revalidatePath("/hardware");
 }
 
 export async function addToCart(
   productId: number,
   quantity = 1,
 ): Promise<CartActionResult> {
-  if (!isValidId(productId) || !Number.isSafeInteger(quantity) || quantity < 1) {
-    return { success: false, message: "Invalid product." };
+  if (!isPositiveInteger(productId) || !isPositiveInteger(quantity)) {
+    return { success: false, message: "Invalid product quantity." };
   }
 
   const product = await prisma.product.findUnique({ where: { id: productId } });
-
   if (!product || product.status !== "ACTIVE") {
     return { success: false, message: "This product is no longer available." };
   }
 
-  if (product.stock < 1) {
-    return { success: false, message: "This product is currently out of stock." };
+  if (product.stock < quantity) {
+    return { success: false, message: "The requested quantity is not available." };
   }
 
   const cart = await getOrCreateCart();
   const existingItem = await prisma.cartItem.findUnique({
-    where: {
-      cartId_productId: {
-        cartId: cart.id,
-        productId,
-      },
-    },
+    where: { cartId_productId: { cartId: cart.id, productId } },
   });
 
   if (existingItem && existingItem.quantity + quantity > product.stock) {
@@ -52,24 +48,13 @@ export async function addToCart(
   }
 
   await prisma.cartItem.upsert({
-    where: {
-      cartId_productId: {
-        cartId: cart.id,
-        productId,
-      },
-    },
-    create: {
-      cartId: cart.id,
-      productId,
-      quantity,
-    },
-    update: {
-      quantity: { increment: quantity },
-    },
+    where: { cartId_productId: { cartId: cart.id, productId } },
+    create: { cartId: cart.id, productId, quantity },
+    update: { quantity: { increment: quantity } },
   });
 
   const updatedCart = await getCart();
-  refreshCartViews();
+  refreshCart();
 
   return {
     success: true,
@@ -79,10 +64,10 @@ export async function addToCart(
 }
 
 export async function updateCartItemQuantity(
-  cartItemId: number,
+  itemId: number,
   quantity: number,
 ): Promise<CartActionResult> {
-  if (!isValidId(cartItemId) || !Number.isSafeInteger(quantity)) {
+  if (!isPositiveInteger(itemId) || !Number.isSafeInteger(quantity)) {
     return { success: false, message: "Invalid cart update." };
   }
 
@@ -92,10 +77,9 @@ export async function updateCartItemQuantity(
   }
 
   const item = await prisma.cartItem.findFirst({
-    where: { id: cartItemId, cartId: cart.id },
+    where: { id: itemId, cartId: cart.id },
     include: { product: true },
   });
-
   if (!item) {
     return { success: false, message: "This cart item could not be found." };
   }
@@ -103,31 +87,20 @@ export async function updateCartItemQuantity(
   if (quantity < 1) {
     await prisma.cartItem.delete({ where: { id: item.id } });
   } else {
-    if (item.product.status !== "ACTIVE" || item.product.stock < 1) {
-      return { success: false, message: "This product is no longer available." };
+    if (item.product.status !== "ACTIVE" || item.product.stock < quantity) {
+      return { success: false, message: "The requested quantity is not available." };
     }
 
-    if (quantity > item.product.stock) {
-      return { success: false, message: `Only ${item.product.stock} item(s) are available.` };
-    }
-
-    await prisma.cartItem.update({
-      where: { id: item.id },
-      data: { quantity },
-    });
+    await prisma.cartItem.update({ where: { id: item.id }, data: { quantity } });
   }
 
   const updatedCart = await getCart();
-  refreshCartViews();
-  return {
-    success: true,
-    message: "Cart updated.",
-    itemCount: getCartItemCount(updatedCart),
-  };
+  refreshCart();
+  return { success: true, message: "Cart updated.", itemCount: getCartItemCount(updatedCart) };
 }
 
-export async function removeCartItem(cartItemId: number): Promise<CartActionResult> {
-  if (!isValidId(cartItemId)) {
+export async function removeFromCart(itemId: number): Promise<CartActionResult> {
+  if (!isPositiveInteger(itemId)) {
     return { success: false, message: "Invalid cart item." };
   }
 
@@ -136,21 +109,13 @@ export async function removeCartItem(cartItemId: number): Promise<CartActionResu
     return { success: false, message: "Your cart could not be found." };
   }
 
-  const item = await prisma.cartItem.findFirst({
-    where: { id: cartItemId, cartId: cart.id },
-  });
-
+  const item = await prisma.cartItem.findFirst({ where: { id: itemId, cartId: cart.id } });
   if (!item) {
     return { success: false, message: "This cart item could not be found." };
   }
 
   await prisma.cartItem.delete({ where: { id: item.id } });
   const updatedCart = await getCart();
-  refreshCartViews();
-
-  return {
-    success: true,
-    message: "Item removed from your cart.",
-    itemCount: getCartItemCount(updatedCart),
-  };
+  refreshCart();
+  return { success: true, message: "Item removed from your cart.", itemCount: getCartItemCount(updatedCart) };
 }

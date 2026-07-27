@@ -1,13 +1,17 @@
 import Hero from "@/components/home/Hero";
-import Categories from "@/components/layout/Categories";
-import FeaturedProducts from "@/components/store/FeaturedProducts";
+import Categories from "@/components/home/Categories";
+import WhyUs from "@/components/home/WhyUs";
+import TrendingProducts from "@/components/home/TrendingProducts";
+import CtaBand from "@/components/home/CtaBand";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <main className="min-h-screen bg-[#0B1220]">
+    <main className="bg-[#070D18]">
       <Hero />
       <Categories />
-      <FeaturedProducts />
+      <WhyUs />
+      <TrendingProducts />
+      <CtaBand />
     </main>
   );
 }

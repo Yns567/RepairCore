@@ -1,84 +1,122 @@
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, CreditCard, ShieldCheck, Truck } from "lucide-react";
+import { Wrench, ShieldCheck, Truck, Headset } from "lucide-react";
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden border-b border-slate-800 bg-[#060b14] text-white">
-      <div className="pointer-events-none absolute inset-0 opacity-50 [background-image:linear-gradient(rgba(37,99,235,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,.08)_1px,transparent_1px)] [background-size:44px_44px]" />
-      <div className="pointer-events-none absolute -left-40 top-10 h-[430px] w-[430px] rounded-full bg-blue-600/20 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-[-220px] right-[13%] h-[500px] w-[500px] rounded-full bg-blue-500/25 blur-3xl" />
+    <section className="relative overflow-hidden bg-[#070D18]">
+      {/* subtle grid backdrop */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.07]"
+        style={{
+          backgroundImage:
+            "linear-gradient(#3b82f6 1px, transparent 1px), linear-gradient(90deg, #3b82f6 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute -top-40 right-[-10%] h-[520px] w-[520px] rounded-full bg-blue-600/20 blur-[120px]"
+        aria-hidden
+      />
 
-      <div className="relative mx-auto grid max-w-7xl items-center gap-8 px-4 py-12 sm:px-6 lg:min-h-[485px] lg:grid-cols-[.9fr_1.1fr] lg:py-14">
-        <div className="relative z-10 max-w-xl">
-          <span className="inline-flex rounded bg-blue-500/15 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[.12em] text-blue-300 ring-1 ring-inset ring-blue-400/25">
-            Professional Tools
+      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 py-20 md:py-28 lg:grid-cols-2">
+        {/* Copy */}
+        <div>
+          <span className="inline-flex items-center gap-2 rounded-full border border-slate-800 bg-[#0F1626] px-3 py-1 text-xs font-medium text-slate-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            Built for repair technicians
           </span>
 
-          <h1 className="mt-5 text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
-            Professional Tools
-            <span className="block bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-              For Professionals
-            </span>
+          <h1 className="mt-6 text-4xl font-extrabold leading-[1.1] tracking-tight text-white md:text-5xl lg:text-6xl">
+            Everything your
+            <br />
+            repair bench runs on.
           </h1>
 
-          <p className="mt-5 max-w-lg text-sm leading-6 text-slate-300 sm:text-base">
-            High-quality tools and programmers for electronics repair. Original products, expert support, and fast shipping for every technician.
+          <p className="mt-6 max-w-lg text-base leading-relaxed text-slate-400 md:text-lg">
+            Genuine hardware, licensed unlock &amp; flash software, and
+            hands-on courses — sourced, verified, and shipped for shops that
+            can&apos;t afford downtime.
           </p>
 
-          <div className="mt-7 flex flex-wrap gap-3">
-            <Link href="/store" className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-950/50 transition hover:bg-blue-500">
-              Shop Now <ArrowRight size={17} />
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <Link
+              href="/hardware"
+              className="rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-900/30 transition-colors hover:bg-blue-500"
+            >
+              Shop Hardware
             </Link>
-            <Link href="/store" className="rounded-lg border border-slate-600 bg-slate-950/30 px-5 py-3 text-sm font-bold text-white transition hover:border-blue-400 hover:bg-slate-900">
-              View Categories
+            <Link
+              href="/software"
+              className="rounded-lg border border-slate-700 px-6 py-3 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+            >
+              Explore Software
             </Link>
           </div>
 
-          <div className="mt-9 grid max-w-xl grid-cols-1 gap-3 border-t border-slate-700/80 pt-6 sm:grid-cols-3 sm:gap-4">
-            <Feature icon={Truck} title="Fast Shipping" text="Worldwide delivery" />
-            <Feature icon={ShieldCheck} title="Original Products" text="100% authentic" />
-            <Feature icon={CreditCard} title="Secure Payment" text="Safe & secure" />
+          <div className="mt-10 grid grid-cols-3 gap-6 border-t border-slate-800 pt-6 text-slate-400">
+            <div className="flex items-center gap-2">
+              <ShieldCheck size={18} className="shrink-0 text-blue-400" />
+              <span className="text-xs leading-tight">
+                Verified sellers
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Truck size={18} className="shrink-0 text-blue-400" />
+              <span className="text-xs leading-tight">
+                Fast dispatch
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Headset size={18} className="shrink-0 text-blue-400" />
+              <span className="text-xs leading-tight">
+                Technician support
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="relative mx-auto h-[290px] w-full max-w-[640px] overflow-hidden rounded-2xl border border-blue-400/20 bg-[#0b1424] shadow-[0_24px_70px_rgba(0,0,0,.55)] sm:h-[355px] lg:h-[420px]">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#06101d]/15 via-transparent to-[#06101d]/15" />
-          <Image
-            src="/images/products/f64.jpg"
-            alt="Professional mobile repair tools"
-            fill
-            priority
-            sizes="(max-width: 1024px) 100vw, 55vw"
-            className="object-cover object-center transition duration-700 hover:scale-105"
-          />
-          <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-[#050a12] via-[#050a12]/25 to-transparent" />
-          <div className="absolute bottom-5 left-5 rounded-lg border border-white/10 bg-slate-950/70 px-3 py-2 backdrop-blur">
-            <p className="text-xs font-bold text-white">Tools trusted by technicians</p>
-            <p className="mt-0.5 text-[11px] text-blue-300">Repair · Program · Restore</p>
+        {/* Signature visual: diagnostic terminal */}
+        <div className="relative mx-auto w-full max-w-md">
+          <div className="absolute -inset-4 -z-10 rounded-3xl bg-blue-600/10 blur-2xl" />
+
+          <div className="overflow-hidden rounded-2xl border border-slate-800 bg-[#0B1220] shadow-2xl shadow-black/40">
+            <div className="flex items-center gap-2 border-b border-slate-800 bg-[#0F1626] px-4 py-3">
+              <span className="h-2.5 w-2.5 rounded-full bg-rose-500/80" />
+              <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
+              <span className="ml-3 flex items-center gap-1.5 font-mono text-[11px] text-slate-500">
+                <Wrench size={12} /> diagnostics.repaircore
+              </span>
+            </div>
+
+            <div className="space-y-2.5 p-5 font-mono text-[13px]">
+              <p className="text-slate-500">
+                &gt; running full board scan...
+              </p>
+              <p className="text-emerald-400">
+                CPU / SoC ................ OK
+              </p>
+              <p className="text-emerald-400">
+                Battery health ........... 91%
+              </p>
+              <p className="text-amber-400">
+                Charging IC .......... check
+              </p>
+              <p className="text-emerald-400">
+                Display driver ........... OK
+              </p>
+              <p className="text-slate-500">
+                &gt; unlock module: <span className="text-blue-400">Z3X</span>{" "}
+                connected
+              </p>
+              <p className="flex items-center gap-1 text-slate-300">
+                &gt; ready for repair
+                <span className="ml-1 inline-block h-3.5 w-2 animate-pulse bg-blue-400" />
+              </p>
+            </div>
           </div>
         </div>
       </div>
     </section>
-  );
-}
-
-function Feature({
-  icon: Icon,
-  title,
-  text,
-}: {
-  icon: typeof Truck;
-  title: string;
-  text: string;
-}) {
-  return (
-    <div className="flex items-center gap-2.5">
-      <Icon size={19} className="shrink-0 text-blue-400" />
-      <div>
-        <p className="text-xs font-bold text-slate-100">{title}</p>
-        <p className="text-[11px] text-slate-400">{text}</p>
-      </div>
-    </div>
   );
 }

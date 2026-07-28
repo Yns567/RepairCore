@@ -56,7 +56,10 @@ export async function POST(request: Request) {
             status: "ACTIVE",
             stock: { gte: item.quantity },
           },
-          data: { stock: { decrement: item.quantity } },
+          data: {
+            stock: { decrement: item.quantity },
+            version: { increment: 1 },
+          },
         });
 
         if (stockUpdate.count !== 1) {

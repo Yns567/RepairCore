@@ -1,6 +1,7 @@
 "use server";
 
-import { mkdir, writeFile } from "fs/promises";
+import { del, put } from "@vercel/blob";
+import { mkdir, unlink, writeFile } from "fs/promises";
 import path from "path";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -18,6 +19,14 @@ const productSchema = z.object({
   brand: z.string().trim().max(80).optional(),
   partNumber: z.string().trim().max(100).optional(),
 });
+
+const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
+type ImageExtension = "jpg" | "png" | "webp";
+type SavedImage = {
+  url: string;
+  blobPath: string | null;
+  localPath: string | null;
+};
 
 function readProductForm(formData: FormData) {
   const parsed = productSchema.safeParse({
@@ -38,19 +47,19 @@ function readProductForm(formData: FormData) {
   return parsed.data;
 }
 
-async function saveImage(formData: FormData) {
+async function saveImage(formData: FormData): Promise<SavedImage | null> {
   const image = formData.get("image");
   if (!(image instanceof File) || image.size === 0) {
     return null;
   }
 
-  const allowedTypes = new Map([
+  const allowedTypes = new Map<string, ImageExtension>([
     ["image/jpeg", "jpg"],
     ["image/png", "png"],
     ["image/webp", "webp"],
   ]);
   const expectedExtension = allowedTypes.get(image.type);
-  if (!expectedExtension || image.size > 4 * 1024 * 1024) {
+  if (!expectedExtension || image.size > MAX_IMAGE_BYTES) {
     throw new Error("Upload a JPG, PNG, or WebP image smaller than 4 MB.");
   }
 
@@ -60,15 +69,88 @@ async function saveImage(formData: FormData) {
     throw new Error("The uploaded file contents do not match its image type.");
   }
 
-  const directory = path.join(process.cwd(), "public", "images", "products");
-  const filename = `${Date.now()}-${crypto.randomUUID()}.${detectedExtension}`;
+  const filename = `${crypto.randomUUID()}.${detectedExtension}`;
 
+  if (hasBlobAccess()) {
+    const contentTypes: Record<ImageExtension, string> = {
+      jpg: "image/jpeg",
+      png: "image/png",
+      webp: "image/webp",
+    };
+    const blob = await put(`product-images/${filename}`, contents, {
+      access: "public",
+      addRandomSuffix: true,
+      allowOverwrite: false,
+      cacheControlMaxAge: 365 * 24 * 60 * 60,
+      contentType: contentTypes[detectedExtension],
+      maximumSizeInBytes: MAX_IMAGE_BYTES,
+    });
+
+    return { url: blob.url, blobPath: blob.pathname, localPath: null };
+  }
+
+  if (process.env.VERCEL) {
+    throw new Error(
+      "Product image storage is not configured for this deployment.",
+    );
+  }
+
+  const directory = path.join(process.cwd(), "public", "images", "products");
+  const localPath = path.join(directory, filename);
   await mkdir(directory, { recursive: true });
-  await writeFile(path.join(directory, filename), contents, { flag: "wx" });
-  return `/images/products/${filename}`;
+  await writeFile(localPath, contents, { flag: "wx" });
+  return {
+    url: `/images/products/${filename}`,
+    blobPath: null,
+    localPath,
+  };
 }
 
-function detectImageExtension(contents: Buffer) {
+function hasBlobAccess() {
+  return Boolean(
+    process.env.BLOB_READ_WRITE_TOKEN ||
+      (process.env.VERCEL_OIDC_TOKEN && process.env.BLOB_STORE_ID),
+  );
+}
+
+async function deleteBlobImage(blobPath: string | null | undefined) {
+  if (!blobPath || !hasBlobAccess()) return;
+  if (!blobPath.startsWith("product-images/") || blobPath.includes("..")) {
+    console.error("Refused to delete an unexpected Blob pathname.", {
+      blobPath,
+    });
+    return;
+  }
+
+  try {
+    await del(blobPath);
+  } catch {
+    // The database change has already succeeded. A later cleanup can safely
+    // remove this orphan without making the administrator repeat the action.
+    console.error("Unable to remove an unused product image from Blob storage.", {
+      blobPath,
+    });
+  }
+}
+
+async function deleteNewImage(savedImage: SavedImage | null) {
+  if (!savedImage) return;
+
+  if (savedImage.blobPath) {
+    await deleteBlobImage(savedImage.blobPath);
+    return;
+  }
+
+  if (savedImage.localPath) {
+    try {
+      await unlink(savedImage.localPath);
+    } catch {
+      console.error("Unable to remove an unused local product image.");
+    }
+  }
+}
+
+function detectImageExtension(contents: Buffer): ImageExtension | null {
   if (
     contents.length >= 3 &&
     contents[0] === 0xff &&
@@ -109,44 +191,86 @@ function refreshProductViews(slug?: string) {
 export async function createProduct(formData: FormData) {
   await requireAdmin();
   const data = readProductForm(formData);
-  const image = await saveImage(formData);
+  const savedImage = await saveImage(formData);
 
-  await prisma.product.create({
-    data: {
-      ...data,
-      description: data.description || null,
-      category: data.category || null,
-      brand: data.brand || null,
-      partNumber: data.partNumber || null,
-      image,
-      status: "ACTIVE",
-    },
-  });
+  try {
+    await prisma.product.create({
+      data: {
+        ...data,
+        description: data.description || null,
+        category: data.category || null,
+        brand: data.brand || null,
+        partNumber: data.partNumber || null,
+        image: savedImage?.url ?? null,
+        imageBlobPath: savedImage?.blobPath ?? null,
+        status: "ACTIVE",
+      },
+    });
+  } catch (error) {
+    await deleteNewImage(savedImage);
+    throw error;
+  }
 
   refreshProductViews(data.slug);
   redirect("/admin/products");
 }
 
-export async function updateProduct(id: number, formData: FormData) {
+export async function updateProduct(
+  id: number,
+  expectedVersion: number,
+  formData: FormData,
+) {
   await requireAdmin();
   if (!Number.isSafeInteger(id) || id < 1) throw new Error("Invalid product.");
+  if (!Number.isSafeInteger(expectedVersion) || expectedVersion < 0) {
+    throw new Error("Invalid product version.");
+  }
 
   const data = readProductForm(formData);
-  const current = await prisma.product.findUnique({ where: { id } });
-  if (!current) throw new Error("Product not found.");
-
-  const image = await saveImage(formData);
-  await prisma.product.update({
-    where: { id },
-    data: {
-      ...data,
-      description: data.description || null,
-      category: data.category || null,
-      brand: data.brand || null,
-      partNumber: data.partNumber || null,
-      ...(image ? { image } : {}),
-    },
+  const current = await prisma.product.findFirst({
+    where: { id, version: expectedVersion },
+    select: { imageBlobPath: true, slug: true, version: true },
   });
+  if (!current) {
+    throw new Error(
+      "This product changed in another session. Refresh the page and try again.",
+    );
+  }
+
+  const savedImage = await saveImage(formData);
+
+  try {
+    const result = await prisma.product.updateMany({
+      where: { id, version: expectedVersion },
+      data: {
+        ...data,
+        description: data.description || null,
+        category: data.category || null,
+        brand: data.brand || null,
+        partNumber: data.partNumber || null,
+        ...(savedImage
+          ? {
+              image: savedImage.url,
+              imageBlobPath: savedImage.blobPath,
+            }
+          : {}),
+        version: { increment: 1 },
+      },
+    });
+
+    if (result.count !== 1) {
+      throw new Error(
+        "This product changed in another session. Refresh the page and try again.",
+      );
+    }
+  } catch (error) {
+    await deleteNewImage(savedImage);
+    throw error;
+  }
+
+  if (savedImage) {
+    await deleteBlobImage(current.imageBlobPath);
+  }
 
   refreshProductViews(current.slug);
   refreshProductViews(data.slug);
@@ -157,7 +281,12 @@ export async function deleteProduct(id: number) {
   await requireAdmin();
   if (!Number.isSafeInteger(id) || id < 1) throw new Error("Invalid product.");
 
-  await prisma.product.delete({ where: { id } });
-  refreshProductViews();
+  const deleted = await prisma.product.delete({
+    where: { id },
+    select: { imageBlobPath: true, slug: true },
+  });
+  await deleteBlobImage(deleted.imageBlobPath);
+
+  refreshProductViews(deleted.slug);
   redirect("/admin/products");
 }

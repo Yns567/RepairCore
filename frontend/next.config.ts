@@ -2,6 +2,22 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "4.5mb",
+    },
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "dcnttyw1vlhmejhy.public.blob.vercel-storage.com",
+        port: "",
+        pathname: "/product-images/**",
+        search: "",
+      },
+    ],
+  },
   async headers() {
     return [
       {

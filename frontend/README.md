@@ -85,8 +85,10 @@ Deployment outline:
 2. Add all values from `.env.example` to the Vercel project's environment variables.
 3. Set `DATABASE_URL` to the pooled Neon URL and `DIRECT_URL` to the direct URL.
 4. Apply migrations and seed data against Neon from this project folder.
-5. Import the GitHub repository into Vercel and deploy it.
-6. Set `AUTH_URL` and `NEXT_PUBLIC_SITE_URL` to the final `https://...vercel.app`
+5. Create a public Vercel Blob store named `product-images` and connect it to
+   the Production and Preview environments of this Vercel project.
+6. Import the GitHub repository into Vercel and deploy it.
+7. Set `AUTH_URL` and `NEXT_PUBLIC_SITE_URL` to the final `https://...vercel.app`
    address, then redeploy.
 
 For a commercial store, a paid hosting plan and a purchased domain are safer than
@@ -97,3 +99,6 @@ a free-domain service. A platform subdomain is the most reliable free test addre
 Only images with clear reuse terms should be published. Attribution for the
 licensed demo photographs is available at `/image-credits`. Branded products keep
 the neutral placeholder until the supplier provides authorized product photos.
+New images uploaded from the production admin dashboard are stored permanently
+in the connected public Vercel Blob store. JPG, PNG and WebP files up to 4 MB are
+accepted.

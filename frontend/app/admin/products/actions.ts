@@ -71,7 +71,7 @@ async function saveImage(formData: FormData): Promise<SavedImage | null> {
 
   const filename = `${crypto.randomUUID()}.${detectedExtension}`;
 
-  if (hasBlobAccess()) {
+  if (hasBlobStoreConfiguration()) {
     const contentTypes: Record<ImageExtension, string> = {
       jpg: "image/jpeg",
       png: "image/png",
@@ -106,15 +106,16 @@ async function saveImage(formData: FormData): Promise<SavedImage | null> {
   };
 }
 
-function hasBlobAccess() {
+function hasBlobStoreConfiguration() {
+  // In Vercel Functions, OIDC arrives through the request context rather than
+  // process.env. The Blob SDK reads it automatically once a store ID exists.
   return Boolean(
-    process.env.BLOB_READ_WRITE_TOKEN ||
-      (process.env.VERCEL_OIDC_TOKEN && process.env.BLOB_STORE_ID),
+    process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID,
   );
 }
 
 async function deleteBlobImage(blobPath: string | null | undefined) {
-  if (!blobPath || !hasBlobAccess()) return;
+  if (!blobPath || !hasBlobStoreConfiguration()) return;
   if (!blobPath.startsWith("product-images/") || blobPath.includes("..")) {
     console.error("Refused to delete an unexpected Blob pathname.", {
       blobPath,

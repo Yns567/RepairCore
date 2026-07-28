@@ -18,10 +18,27 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+.admin-theme {
+  color-scheme: light;
+}
+
+.admin-theme input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
+.admin-theme select,
+.admin-theme textarea {
+  background-color: #ffffff;
+  color: #111827;
+}
+
+.admin-theme input::placeholder,
+.admin-theme textarea::placeholder {
+  color: #9ca3af;
+}
+
 .field {
   width: 100%;
   border-radius: 0.5rem;
   border: 1px solid #d1d5db;
+  background-color: #ffffff;
   padding: 0.75rem;
   color: #111827;
   outline: none;

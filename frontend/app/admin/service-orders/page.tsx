@@ -125,7 +125,7 @@ export default async function AdminGsmServiceOrdersPage() {
                       <select
                         name="status"
                         defaultValue={order.status}
-                        className="rounded-lg border border-gray-300 px-3 py-2.5 font-normal text-gray-900"
+                        className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 font-normal text-gray-900"
                       >
                         {allowedStatuses.map((status) => (
                           <option key={status} value={status}>{status}</option>
@@ -140,7 +140,7 @@ export default async function AdminGsmServiceOrdersPage() {
                         maxLength={2_000}
                         rows={4}
                         placeholder="Result delivered to the customer, processing note, or rejection reason"
-                        className="resize-y rounded-lg border border-gray-300 px-3 py-2.5 font-normal text-gray-900"
+                        className="resize-y rounded-lg border border-gray-300 bg-white px-3 py-2.5 font-normal text-gray-900"
                       />
                     </label>
                     {order.refundedAt ? (

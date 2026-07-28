@@ -11,6 +11,12 @@ RepairCore is a Next.js storefront for mobile-repair technicians. It includes:
 RepairCore does not offer IMEI alteration or spoofing, and service orders require
 the customer to confirm ownership or authorization.
 
+## Live demo
+
+The current public demo is available at
+[repaircore.vercel.app](https://repaircore.vercel.app). It runs on Vercel with a
+Neon PostgreSQL database.
+
 ## Local setup
 
 Requirements: Node.js, PostgreSQL and npm.

@@ -60,7 +60,7 @@ export default async function AdminOrderDetailPage({
       </div>
 
       <div className="mt-6 rounded-xl border bg-white shadow-sm">
-        <table className="w-full border-collapse">
+        <table className="w-full border-collapse text-gray-700">
           <thead>
             <tr className="border-b bg-gray-100 text-left text-sm text-gray-600">
               <th className="px-4 py-3">Product</th>
@@ -69,9 +69,9 @@ export default async function AdminOrderDetailPage({
               <th className="px-4 py-3">Subtotal</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-100">
             {order.items.map((item) => (
-              <tr key={item.id} className="border-b text-sm">
+              <tr key={item.id} className="text-sm">
                 <td className="px-4 py-3">{item.product.name}</td>
                 <td className="px-4 py-3">{item.quantity}</td>
                 <td className="px-4 py-3">{item.unitPrice.toString()} $</td>

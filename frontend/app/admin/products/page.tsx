@@ -7,7 +7,7 @@ export default async function ProductsPage() {
   });
 
   return (
-    <main className="text-slate-200">
+    <main className="text-gray-900">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Products</h1>
         <Link
@@ -18,30 +18,30 @@ export default async function ProductsPage() {
         </Link>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-slate-800">
-        <table className="w-full">
-          <thead className="bg-slate-950">
+      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+        <table className="w-full min-w-[760px] text-sm">
+          <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
             <tr>
-              <th className="p-4 text-left">Name</th>
-              <th className="p-4 text-left">Category</th>
-              <th className="p-4 text-left">Price</th>
-              <th className="p-4 text-left">Stock</th>
-              <th className="p-4 text-left">Status</th>
-              <th className="p-4"></th>
+              <th className="px-4 py-3 text-left font-semibold">Name</th>
+              <th className="px-4 py-3 text-left font-semibold">Category</th>
+              <th className="px-4 py-3 text-left font-semibold">Price</th>
+              <th className="px-4 py-3 text-left font-semibold">Stock</th>
+              <th className="px-4 py-3 text-left font-semibold">Status</th>
+              <th className="px-4 py-3"></th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-100 text-gray-700">
             {products.map((product) => (
-              <tr key={product.id} className="border-t border-slate-800">
-                <td className="p-4">{product.name}</td>
-                <td className="p-4">{product.category ?? "—"}</td>
-                <td className="p-4">${Number(product.price).toFixed(2)}</td>
-                <td className="p-4">{product.stock}</td>
-                <td className="p-4">{product.status}</td>
-                <td className="p-4">
+              <tr key={product.id} className="transition-colors hover:bg-gray-50">
+                <td className="px-4 py-4 font-medium text-gray-900">{product.name}</td>
+                <td className="px-4 py-4">{product.category ?? "—"}</td>
+                <td className="px-4 py-4">${Number(product.price).toFixed(2)}</td>
+                <td className="px-4 py-4">{product.stock}</td>
+                <td className="px-4 py-4">{product.status}</td>
+                <td className="px-4 py-4 text-right">
                   <Link
                     href={`/admin/products/${product.id}/edit`}
-                    className="text-blue-400 hover:underline"
+                    className="font-medium text-blue-600 hover:underline"
                   >
                     Edit
                   </Link>
@@ -51,7 +51,7 @@ export default async function ProductsPage() {
 
             {products.length === 0 && (
               <tr>
-                <td colSpan={6} className="p-6 text-center text-slate-500">
+                <td colSpan={6} className="p-6 text-center text-gray-500">
                   No products yet.
                 </td>
               </tr>

@@ -55,7 +55,7 @@ export default async function AdminOrdersPage({
         ))}
       </div>
 
-      <table className="mt-6 w-full border-collapse overflow-hidden rounded-xl bg-white shadow-sm">
+      <table className="mt-6 w-full border-collapse overflow-hidden rounded-xl bg-white text-gray-700 shadow-sm">
         <thead>
           <tr className="border-b bg-gray-100 text-left text-sm text-gray-600">
             <th className="px-4 py-3">#</th>
@@ -67,9 +67,9 @@ export default async function AdminOrdersPage({
             <th className="px-4 py-3"></th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-gray-100">
           {orders.map((order) => (
-            <tr key={order.id} className="border-b text-sm">
+            <tr key={order.id} className="text-sm">
               <td className="px-4 py-3 font-medium">#{order.id}</td>
               <td className="px-4 py-3">
                 <div>{order.fullName}</div>

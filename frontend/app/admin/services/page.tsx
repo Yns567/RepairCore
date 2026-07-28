@@ -76,7 +76,7 @@ export default async function AdminGsmServicesPage() {
                             step="0.01"
                             defaultValue={service.price.toString()}
                             required
-                            className="w-28 rounded-lg border border-gray-300 px-2.5 py-2 text-sm text-gray-900"
+                            className="w-28 rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-sm text-gray-900"
                           />
                         </label>
                         <label className="grid gap-1 text-xs font-medium text-gray-600">
@@ -87,7 +87,7 @@ export default async function AdminGsmServicesPage() {
                             minLength={2}
                             maxLength={80}
                             required
-                            className="w-44 rounded-lg border border-gray-300 px-2.5 py-2 text-sm text-gray-900"
+                            className="w-44 rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-sm text-gray-900"
                           />
                         </label>
                         <label className="grid gap-1 text-xs font-medium text-gray-600">
@@ -95,7 +95,7 @@ export default async function AdminGsmServicesPage() {
                           <select
                             name="status"
                             defaultValue={service.status === "ACTIVE" ? "ACTIVE" : "INACTIVE"}
-                            className="rounded-lg border border-gray-300 px-2.5 py-2 text-sm text-gray-900"
+                            className="rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-sm text-gray-900"
                           >
                             <option value="ACTIVE">Active</option>
                             <option value="INACTIVE">Inactive</option>

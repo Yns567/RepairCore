@@ -13,8 +13,8 @@ const links = [
 
 export default function AdminSidebar() {
   return (
-    <aside className="w-56 shrink-0 border-r bg-white">
-      <div className="border-b p-4 text-lg font-bold">RepairCore Admin</div>
+    <aside className="w-56 shrink-0 border-r border-gray-200 bg-white text-gray-900">
+      <div className="border-b border-gray-200 p-4 text-lg font-bold">RepairCore Admin</div>
       <nav className="flex flex-col gap-1 p-3">
         {links.map((link) => (
           <Link

@@ -10,31 +10,33 @@ datasource db {
 // ---------- Catalog ----------
 
 model Product {
-  id          Int      @id @default(autoincrement())
-  name        String
-  slug        String   @unique
+  id   Int    @id @default(autoincrement())
+  name String
+  slug String @unique
 
   description String?
 
- price       Decimal
+  price Decimal
 
-  stock       Int      @default(0)
+  stock Int @default(0)
 
-  image       String?
+  image         String?
+  imageBlobPath String? @unique
+  version       Int     @default(0)
 
-  brand       String?
+  brand String?
 
-  category    String?
+  category String?
 
-  partNumber  String?
+  partNumber String?
 
-  status      String   @default("ACTIVE")
+  status String @default("ACTIVE")
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  CartItems    CartItem[]
-  OrderItems   OrderItem[]
+  CartItems  CartItem[]
+  OrderItems OrderItem[]
 }
 
 model Cart {
@@ -43,18 +45,18 @@ model Cart {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  items     CartItem[]
+  items CartItem[]
 }
 
 model CartItem {
-  id        Int      @id @default(autoincrement())
-  quantity  Int      @default(1)
+  id       Int @id @default(autoincrement())
+  quantity Int @default(1)
 
-  cartId    Int
-  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  cartId Int
+  cart   Cart @relation(fields: [cartId], references: [id], onDelete: Cascade)
 
   productId Int
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
@@ -62,18 +64,18 @@ model CartItem {
 }
 
 model Category {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  slug      String   @unique
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  slug String @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Brand {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  slug      String   @unique
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  slug String @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -90,15 +92,15 @@ model User {
   hashedPassword String?
   role           String    @default("CUSTOMER") // CUSTOMER | ADMIN
 
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  accounts       Account[]
-  sessions       Session[]
-  orders         Order[]
-  subscriptions  Subscription[]
-  enrollments    Enrollment[]
-  wallet         Wallet?
+  accounts         Account[]
+  sessions         Session[]
+  orders           Order[]
+  subscriptions    Subscription[]
+  enrollments      Enrollment[]
+  wallet           Wallet?
   gsmServiceOrders GsmServiceOrder[]
 }
 
@@ -141,24 +143,24 @@ model VerificationToken {
 // ---------- Orders (store checkout) ----------
 
 model Order {
-  id          Int         @id @default(autoincrement())
-  userId      String
-  user        User        @relation(fields: [userId], references: [id])
+  id     Int    @id @default(autoincrement())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
-  status      String      @default("PENDING") // PENDING | PAID | SHIPPED | COMPLETED | CANCELLED
-  paymentMethod String    @default("COD") // COD | BALANCE
-  total       Decimal
+  status        String  @default("PENDING") // PENDING | PAID | SHIPPED | COMPLETED | CANCELLED
+  paymentMethod String  @default("COD") // COD | BALANCE
+  total         Decimal
 
-  fullName    String
-  phone       String
-  address     String
-  city        String
-  notes       String?
+  fullName String
+  phone    String
+  address  String
+  city     String
+  notes    String?
 
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  items       OrderItem[]
+  items OrderItem[]
 }
 
 // ---------- Store credit / wallet ----------
@@ -176,16 +178,16 @@ model Wallet {
 }
 
 model WalletTransaction {
-  id           Int      @id @default(autoincrement())
-  walletId     Int
-  type         String   // CREDIT | DEBIT | REFUND | ADJUSTMENT
-  amount       Decimal  // Always a positive amount; type determines direction.
-  balanceAfter Decimal
-  description  String
+  id            Int      @id @default(autoincrement())
+  walletId      Int
+  type          String // CREDIT | DEBIT | REFUND | ADJUSTMENT
+  amount        Decimal // Always a positive amount; type determines direction.
+  balanceAfter  Decimal
+  description   String
   referenceType String?
-  referenceId  String?
-  createdById  String?
-  createdAt    DateTime @default(now())
+  referenceId   String?
+  createdById   String?
+  createdAt     DateTime @default(now())
 
   wallet Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
 
@@ -200,7 +202,7 @@ model GsmService {
   name          String
   slug          String   @unique
   description   String?
-  category      String   // IMEI | SERVER_CREDIT | TOOL_RENTAL
+  category      String // IMEI | SERVER_CREDIT | TOOL_RENTAL
   provider      String?
   inputType     String   @default("NONE") // IMEI | USERNAME | NONE
   estimatedTime String
@@ -216,11 +218,11 @@ model GsmService {
 }
 
 model GsmServiceOrder {
-  id                       Int      @id @default(autoincrement())
-  clientRequestId          String?  @unique
+  id                       Int       @id @default(autoincrement())
+  clientRequestId          String?   @unique
   userId                   String
   serviceId                Int
-  status                   String   @default("PENDING") // PENDING | PROCESSING | COMPLETED | REJECTED | CANCELLED
+  status                   String    @default("PENDING") // PENDING | PROCESSING | COMPLETED | REJECTED | CANCELLED
   price                    Decimal
   imei                     String?
   accountUsername          String?
@@ -229,8 +231,8 @@ model GsmServiceOrder {
   result                   String?
   authorizationConfirmedAt DateTime
   refundedAt               DateTime?
-  createdAt                DateTime @default(now())
-  updatedAt                DateTime @updatedAt
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
 
   user    User       @relation(fields: [userId], references: [id])
   service GsmService @relation(fields: [serviceId], references: [id])
@@ -240,95 +242,95 @@ model GsmServiceOrder {
 }
 
 model OrderItem {
-  id         Int      @id @default(autoincrement())
-  quantity   Int      @default(1)
-  unitPrice  Decimal
+  id        Int     @id @default(autoincrement())
+  quantity  Int     @default(1)
+  unitPrice Decimal
 
-  orderId    Int
-  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId Int
+  order   Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
-  productId  Int
-  product    Product  @relation(fields: [productId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
 }
 
 // ---------- Software subscriptions / rentals ----------
 
 model SubscriptionPlan {
-  id            Int      @id @default(autoincrement())
-  name          String
-  slug          String   @unique
-  description   String?
+  id          Int     @id @default(autoincrement())
+  name        String
+  slug        String  @unique
+  description String?
 
-  billingPeriod String   // MONTHLY | YEARLY | RENTAL_DAY | RENTAL_WEEK
+  billingPeriod String // MONTHLY | YEARLY | RENTAL_DAY | RENTAL_WEEK
   price         Decimal
 
-  softwareName  String   // e.g. "Z3X", "UMT", "Chimera"
-  isRental      Boolean  @default(false)
+  softwareName String // e.g. "Z3X", "UMT", "Chimera"
+  isRental     Boolean @default(false)
 
-  status        String   @default("ACTIVE")
+  status String @default("ACTIVE")
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   subscriptions Subscription[]
 }
 
 model Subscription {
-  id         Int              @id @default(autoincrement())
-  userId     String
-  user       User             @relation(fields: [userId], references: [id])
+  id     Int    @id @default(autoincrement())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
-  planId     Int
-  plan       SubscriptionPlan @relation(fields: [planId], references: [id])
+  planId Int
+  plan   SubscriptionPlan @relation(fields: [planId], references: [id])
 
-  status     String           @default("ACTIVE") // ACTIVE | EXPIRED | CANCELLED
-  startDate  DateTime         @default(now())
-  endDate    DateTime
+  status    String   @default("ACTIVE") // ACTIVE | EXPIRED | CANCELLED
+  startDate DateTime @default(now())
+  endDate   DateTime
 
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ---------- Learning (courses) ----------
 
 model Course {
-  id          Int          @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   title       String
-  slug        String       @unique
+  slug        String  @unique
   description String?
   image       String?
-  price       Decimal      @default(0) // 0 = free
+  price       Decimal @default(0) // 0 = free
 
-  level       String       @default("BEGINNER") // BEGINNER | INTERMEDIATE | ADVANCED
-  status      String       @default("ACTIVE")
+  level  String @default("BEGINNER") // BEGINNER | INTERMEDIATE | ADVANCED
+  status String @default("ACTIVE")
 
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   lessons     Lesson[]
   enrollments Enrollment[]
 }
 
 model Lesson {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String?
-  videoUrl  String?
-  order     Int      @default(0)
+  id       Int     @id @default(autoincrement())
+  title    String
+  content  String?
+  videoUrl String?
+  order    Int     @default(0)
 
-  courseId  Int
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 }
 
 model Enrollment {
-  id        Int      @id @default(autoincrement())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  id     Int    @id @default(autoincrement())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
-  courseId  Int
-  course    Course   @relation(fields: [courseId], references: [id])
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id])
 
   progress  Int      @default(0) // % complete
   createdAt DateTime @default(now())

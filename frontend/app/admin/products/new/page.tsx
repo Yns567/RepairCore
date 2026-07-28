@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { catalogCategories } from "@/lib/catalog";
 import { createProduct } from "../actions";
 
 export default function NewProductPage() {
@@ -144,14 +145,14 @@ export default function NewProductPage() {
               <select
                 id="category"
                 name="category"
-                defaultValue="hardware"
+                defaultValue="programmers"
                 className="w-full rounded-lg border border-gray-300 bg-white p-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
-                <option value="hardware">Hardware</option>
-                <option value="software">Software</option>
-                <option value="tools">Tools</option>
-                <option value="spare-parts">Spare Parts</option>
-                <option value="accessories">Accessories</option>
+                {catalogCategories.map((category) => (
+                  <option key={category.slug} value={category.slug}>
+                    {category.label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -211,7 +212,8 @@ export default function NewProductPage() {
               className="w-full rounded-lg border border-dashed border-gray-300 p-3 text-sm text-gray-600 file:mr-4 file:rounded-md file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-blue-700 hover:file:bg-blue-100"
             />
             <p className="mt-1 text-xs text-gray-400">
-              JPG, PNG, or WebP, ideally square and smaller than 4 MB.
+              JPG, PNG, or WebP, ideally square and smaller than 4 MB. The
+              image is stored permanently after you save the product.
             </p>
           </div>
         </section>

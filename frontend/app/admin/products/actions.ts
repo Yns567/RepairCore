@@ -21,12 +21,29 @@ const productSchema = z.object({
 });
 
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
+const IMAGE_FIELD_NAMES = ["image", "image2", "image3"] as const;
+const REMOVE_IMAGE_FIELD_NAMES = [
+  "removeImage",
+  "removeImage2",
+  "removeImage3",
+] as const;
 type ImageExtension = "jpg" | "png" | "webp";
 type SavedImage = {
   url: string;
   blobPath: string | null;
   localPath: string | null;
 };
+type StoredImage = Pick<SavedImage, "url" | "blobPath">;
+type SavedImageSlots = [
+  SavedImage | null,
+  SavedImage | null,
+  SavedImage | null,
+];
+type StoredImageSlots = [
+  StoredImage | null,
+  StoredImage | null,
+  StoredImage | null,
+];
 
 function readProductForm(formData: FormData) {
   const parsed = productSchema.safeParse({
@@ -47,8 +64,7 @@ function readProductForm(formData: FormData) {
   return parsed.data;
 }
 
-async function saveImage(formData: FormData): Promise<SavedImage | null> {
-  const image = formData.get("image");
+async function saveImage(image: FormDataEntryValue | null): Promise<SavedImage | null> {
   if (!(image instanceof File) || image.size === 0) {
     return null;
   }
@@ -60,7 +76,7 @@ async function saveImage(formData: FormData): Promise<SavedImage | null> {
   ]);
   const expectedExtension = allowedTypes.get(image.type);
   if (!expectedExtension || image.size > MAX_IMAGE_BYTES) {
-    throw new Error("Upload a JPG, PNG, or WebP image smaller than 4 MB.");
+    throw new Error("Upload a JPG, PNG, or WebP image no larger than 4 MB.");
   }
 
   const contents = Buffer.from(await image.arrayBuffer());
@@ -106,6 +122,32 @@ async function saveImage(formData: FormData): Promise<SavedImage | null> {
   };
 }
 
+async function saveProductImages(formData: FormData): Promise<SavedImageSlots> {
+  const entries = IMAGE_FIELD_NAMES.map((fieldName) => formData.get(fieldName));
+  const totalBytes = entries.reduce(
+    (total, entry) =>
+      total + (entry instanceof File && entry.size > 0 ? entry.size : 0),
+    0,
+  );
+
+  if (totalBytes > MAX_IMAGE_BYTES) {
+    throw new Error(
+      "The combined size of newly selected product images must not exceed 4 MB.",
+    );
+  }
+
+  const savedImages: SavedImageSlots = [null, null, null];
+  try {
+    for (let index = 0; index < entries.length; index += 1) {
+      savedImages[index] = await saveImage(entries[index]);
+    }
+    return savedImages;
+  } catch (error) {
+    await deleteNewImages(savedImages);
+    throw error;
+  }
+}
+
 function hasBlobStoreConfiguration() {
   // In Vercel Functions, OIDC arrives through the request context rather than
   // process.env. The Blob SDK reads it automatically once a store ID exists.
@@ -114,9 +156,34 @@ function hasBlobStoreConfiguration() {
   );
 }
 
+function isManagedBlobPath(blobPath: string) {
+  return blobPath.startsWith("product-images/") && !blobPath.includes("..");
+}
+
+function assertBlobCleanupAvailable(
+  blobPaths: readonly (string | null | undefined)[],
+) {
+  const pathsToDelete = blobPaths.filter(
+    (blobPath): blobPath is string => Boolean(blobPath),
+  );
+  if (pathsToDelete.length === 0) return;
+
+  if (!hasBlobStoreConfiguration()) {
+    throw new Error(
+      "Product image storage is not configured, so the existing image was not removed.",
+    );
+  }
+
+  if (pathsToDelete.some((blobPath) => !isManagedBlobPath(blobPath))) {
+    throw new Error(
+      "This product contains an invalid stored image reference. The image was not removed.",
+    );
+  }
+}
+
 async function deleteBlobImage(blobPath: string | null | undefined) {
   if (!blobPath || !hasBlobStoreConfiguration()) return;
-  if (!blobPath.startsWith("product-images/") || blobPath.includes("..")) {
+  if (!isManagedBlobPath(blobPath)) {
     console.error("Refused to delete an unexpected Blob pathname.", {
       blobPath,
     });
@@ -124,6 +191,24 @@ async function deleteBlobImage(blobPath: string | null | undefined) {
   }
 
   try {
+    const stillReferenced = await prisma.product.findFirst({
+      where: {
+        OR: [
+          { imageBlobPath: blobPath },
+          { image2BlobPath: blobPath },
+          { image3BlobPath: blobPath },
+        ],
+      },
+      select: { id: true },
+    });
+    if (stillReferenced) {
+      console.warn("Kept a product image that is still referenced.", {
+        blobPath,
+        productId: stillReferenced.id,
+      });
+      return;
+    }
+
     await del(blobPath);
   } catch {
     // The database change has already succeeded. A later cleanup can safely
@@ -149,6 +234,38 @@ async function deleteNewImage(savedImage: SavedImage | null) {
       console.error("Unable to remove an unused local product image.");
     }
   }
+}
+
+async function deleteNewImages(savedImages: readonly (SavedImage | null)[]) {
+  for (const savedImage of savedImages) {
+    await deleteNewImage(savedImage);
+  }
+}
+
+function compactImageSlots(
+  images: readonly (StoredImage | null)[],
+): StoredImageSlots {
+  const compacted = images.filter(
+    (image): image is StoredImage => Boolean(image?.url),
+  );
+  return [compacted[0] ?? null, compacted[1] ?? null, compacted[2] ?? null];
+}
+
+function imageSlotData(images: StoredImageSlots) {
+  return {
+    image: images[0]?.url ?? null,
+    imageBlobPath: images[0]?.blobPath ?? null,
+    image2: images[1]?.url ?? null,
+    image2BlobPath: images[1]?.blobPath ?? null,
+    image3: images[2]?.url ?? null,
+    image3BlobPath: images[2]?.blobPath ?? null,
+  };
+}
+
+function readImageRemovalFlags(formData: FormData) {
+  return REMOVE_IMAGE_FIELD_NAMES.map(
+    (fieldName) => formData.get(fieldName) === "on",
+  );
 }
 
 function detectImageExtension(contents: Buffer): ImageExtension | null {
@@ -192,7 +309,8 @@ function refreshProductViews(slug?: string) {
 export async function createProduct(formData: FormData) {
   await requireAdmin();
   const data = readProductForm(formData);
-  const savedImage = await saveImage(formData);
+  const savedImages = await saveProductImages(formData);
+  const images = compactImageSlots(savedImages);
 
   try {
     await prisma.product.create({
@@ -202,13 +320,12 @@ export async function createProduct(formData: FormData) {
         category: data.category || null,
         brand: data.brand || null,
         partNumber: data.partNumber || null,
-        image: savedImage?.url ?? null,
-        imageBlobPath: savedImage?.blobPath ?? null,
+        ...imageSlotData(images),
         status: "ACTIVE",
       },
     });
   } catch (error) {
-    await deleteNewImage(savedImage);
+    await deleteNewImages(savedImages);
     throw error;
   }
 
@@ -230,7 +347,15 @@ export async function updateProduct(
   const data = readProductForm(formData);
   const current = await prisma.product.findFirst({
     where: { id, version: expectedVersion },
-    select: { imageBlobPath: true, slug: true, version: true },
+    select: {
+      image: true,
+      imageBlobPath: true,
+      image2: true,
+      image2BlobPath: true,
+      image3: true,
+      image3BlobPath: true,
+      slug: true,
+    },
   });
   if (!current) {
     throw new Error(
@@ -238,9 +363,39 @@ export async function updateProduct(
     );
   }
 
-  const savedImage = await saveImage(formData);
+  const savedImages = await saveProductImages(formData);
+  const removalFlags = readImageRemovalFlags(formData);
+  const currentImages: StoredImageSlots = [
+    current.image
+      ? { url: current.image, blobPath: current.imageBlobPath }
+      : null,
+    current.image2
+      ? { url: current.image2, blobPath: current.image2BlobPath }
+      : null,
+    current.image3
+      ? { url: current.image3, blobPath: current.image3BlobPath }
+      : null,
+  ];
+  const requestedImages = currentImages.map((currentImage, index) => {
+    const replacement = savedImages[index];
+    if (replacement) {
+      return { url: replacement.url, blobPath: replacement.blobPath };
+    }
+    return removalFlags[index] ? null : currentImage;
+  });
+  const finalImages = compactImageSlots(requestedImages);
+  const retainedBlobPaths = new Set(
+    finalImages.flatMap((image) => (image?.blobPath ? [image.blobPath] : [])),
+  );
+  const replacedBlobPaths = currentImages.flatMap((image) =>
+    image?.blobPath && !retainedBlobPaths.has(image.blobPath)
+      ? [image.blobPath]
+      : [],
+  );
 
   try {
+    assertBlobCleanupAvailable(replacedBlobPaths);
+
     const result = await prisma.product.updateMany({
       where: { id, version: expectedVersion },
       data: {
@@ -249,12 +404,7 @@ export async function updateProduct(
         category: data.category || null,
         brand: data.brand || null,
         partNumber: data.partNumber || null,
-        ...(savedImage
-          ? {
-              image: savedImage.url,
-              imageBlobPath: savedImage.blobPath,
-            }
-          : {}),
+        ...imageSlotData(finalImages),
         version: { increment: 1 },
       },
     });
@@ -265,12 +415,12 @@ export async function updateProduct(
       );
     }
   } catch (error) {
-    await deleteNewImage(savedImage);
+    await deleteNewImages(savedImages);
     throw error;
   }
 
-  if (savedImage) {
-    await deleteBlobImage(current.imageBlobPath);
+  for (const blobPath of replacedBlobPaths) {
+    await deleteBlobImage(blobPath);
   }
 
   refreshProductViews(current.slug);
@@ -282,12 +432,38 @@ export async function deleteProduct(id: number) {
   await requireAdmin();
   if (!Number.isSafeInteger(id) || id < 1) throw new Error("Invalid product.");
 
-  const deleted = await prisma.product.delete({
+  const current = await prisma.product.findUnique({
     where: { id },
-    select: { imageBlobPath: true, slug: true },
+    select: {
+      imageBlobPath: true,
+      image2BlobPath: true,
+      image3BlobPath: true,
+      slug: true,
+      version: true,
+    },
   });
-  await deleteBlobImage(deleted.imageBlobPath);
+  if (!current) throw new Error("Product not found.");
 
-  refreshProductViews(deleted.slug);
+  const blobPaths = [
+    current.imageBlobPath,
+    current.image2BlobPath,
+    current.image3BlobPath,
+  ];
+  assertBlobCleanupAvailable(blobPaths);
+
+  const deleted = await prisma.product.deleteMany({
+    where: { id, version: current.version },
+  });
+  if (deleted.count !== 1) {
+    throw new Error(
+      "This product changed in another session. Refresh the page and try again.",
+    );
+  }
+
+  for (const blobPath of blobPaths) {
+    await deleteBlobImage(blobPath);
+  }
+
+  refreshProductViews(current.slug);
   redirect("/admin/products");
 }

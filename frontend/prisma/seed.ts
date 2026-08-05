@@ -455,7 +455,10 @@ async function main() {
   for (const product of products) {
     await prisma.product.upsert({
       where: { slug: product.slug },
-      update: product,
+      // Seed products are starter records. Once an administrator edits a
+      // product (especially its Blob-backed images), rerunning the seed must
+      // not overwrite those live values or desynchronise image/imageBlobPath.
+      update: {},
       create: product,
     });
   }

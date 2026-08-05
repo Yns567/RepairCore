@@ -1,9 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Check, ChevronRight, Heart, ShieldCheck, Star, Truck } from "lucide-react";
 import { notFound } from "next/navigation";
 import ProductPurchase from "@/components/cart/ProductPurchase";
 import ProductCard from "@/components/store/ProductCard";
+import ProductGallery from "@/components/store/ProductGallery";
 import { prisma } from "@/lib/prisma";
 
 type PageProps = {
@@ -29,6 +29,9 @@ export default async function ProductPage({ params }: PageProps) {
   });
 
   const isAvailable = product.status === "ACTIVE" && product.stock > 0;
+  const productImages = [product.image, product.image2, product.image3].filter(
+    (image): image is string => Boolean(image),
+  );
   const details = [
     product.brand && { label: "Brand", value: product.brand },
     product.category && { label: "Category", value: product.category },
@@ -48,32 +51,12 @@ export default async function ProductPage({ params }: PageProps) {
         </nav>
 
         <section className="mt-6 grid gap-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-7 lg:grid-cols-[1.08fr_.92fr] lg:gap-12">
-          <div className="grid grid-cols-[58px_minmax(0,1fr)] gap-3 sm:grid-cols-[72px_minmax(0,1fr)] sm:gap-5">
-            <div className="flex flex-col gap-3 pt-3">
-              <div className="relative aspect-square overflow-hidden rounded-lg border-2 border-blue-600 bg-slate-50 p-1.5">
-                <Image src={product.image || "/placeholder.svg"} alt="" fill sizes="72px" className="object-contain" />
-              </div>
-              <div className="relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-1.5 opacity-65">
-                <Image src={product.image || "/placeholder.svg"} alt="" fill sizes="72px" className="object-contain" />
-              </div>
-              <div className="relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-1.5 opacity-40">
-                <Image src={product.image || "/placeholder.svg"} alt="" fill sizes="72px" className="object-contain" />
-              </div>
-            </div>
-
-            <div className="relative flex min-h-[310px] items-center justify-center overflow-hidden rounded-xl bg-[#f7f9fd] p-6 sm:min-h-[455px] sm:p-10">
-              <div className="absolute h-4/5 w-4/5 rounded-full bg-blue-100/70 blur-3xl" />
-              <Image
-                src={product.image || "/placeholder.svg"}
-                alt={product.name}
-                fill
-                priority
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="relative object-contain p-4"
-              />
-              {product.category && <span className="absolute left-4 top-4 rounded-md bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-blue-700 shadow-sm ring-1 ring-slate-200">{product.category}</span>}
-            </div>
-          </div>
+          <ProductGallery
+            key={product.id}
+            images={productImages}
+            productName={product.name}
+            category={product.category}
+          />
 
           <div className="flex flex-col py-1">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">

@@ -99,6 +99,7 @@ a free-domain service. A platform subdomain is the most reliable free test addre
 Only images with clear reuse terms should be published. Attribution for the
 licensed demo photographs is available at `/image-credits`. Branded products keep
 the neutral placeholder until the supplier provides authorized product photos.
-New images uploaded from the production admin dashboard are stored permanently
-in the connected public Vercel Blob store. JPG, PNG and WebP files up to 4 MB are
-accepted.
+Up to three images per product can be uploaded from the production admin
+dashboard and are stored permanently in the connected public Vercel Blob store.
+JPG, PNG and WebP are accepted. To stay within Vercel's server-upload limit, the
+combined size of images selected in one save must not exceed 4 MB.

@@ -20,9 +20,13 @@ model Product {
 
   stock Int @default(0)
 
-  image         String?
-  imageBlobPath String? @unique
-  version       Int     @default(0)
+  image          String?
+  imageBlobPath  String? @unique
+  image2         String?
+  image2BlobPath String? @unique
+  image3         String?
+  image3BlobPath String? @unique
+  version        Int     @default(0)
 
   brand String?
 

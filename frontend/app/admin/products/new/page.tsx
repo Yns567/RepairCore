@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ProductImageFields from "@/components/admin/ProductImageFields";
 import { catalogCategories } from "@/lib/catalog";
 import { createProduct } from "../actions";
 
@@ -191,32 +192,7 @@ export default function NewProductPage() {
           </div>
         </section>
 
-        {/* Image */}
-        <section className="space-y-4 border-t border-gray-100 pt-6">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400">
-            Product Image
-          </h2>
-
-          <div>
-            <label
-              htmlFor="image"
-              className="mb-1 block text-sm font-medium text-gray-700"
-            >
-              Upload Image
-            </label>
-            <input
-              id="image"
-              type="file"
-              name="image"
-              accept="image/png,image/jpeg,image/webp"
-              className="w-full rounded-lg border border-dashed border-gray-300 p-3 text-sm text-gray-600 file:mr-4 file:rounded-md file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-blue-700 hover:file:bg-blue-100"
-            />
-            <p className="mt-1 text-xs text-gray-400">
-              JPG, PNG, or WebP, ideally square and smaller than 4 MB. The
-              image is stored permanently after you save the product.
-            </p>
-          </div>
-        </section>
+        <ProductImageFields />
 
         {/* Actions */}
         <div className="flex items-center gap-3 border-t border-gray-100 pt-6">

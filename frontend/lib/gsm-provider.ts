@@ -107,6 +107,7 @@ async function call(action: string, parameters?: Record<string, string | number>
     response = await fetch(settings.endpoint, {
       method: "POST",
       body: form,
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; RepairCore/1.0)", Accept: "application/json" },
       signal: AbortSignal.timeout(25_000),
       cache: "no-store",
     });
@@ -116,7 +117,15 @@ async function call(action: string, parameters?: Record<string, string | number>
   }
 
   const data = (await response.json().catch(() => null)) as ApiResponse | null;
-  if (!data) throw new ProviderError(`Unexpected provider response (HTTP ${response.status}).`, false);
+  if (!data) {
+    const firewall = response.status === 403 && response.headers.has("cf-ray");
+    throw new ProviderError(
+      firewall
+        ? "Blocked by the provider's firewall (Cloudflare, HTTP 403). Ask the provider to allow API calls from your server, or check the IP whitelist in your API Access settings."
+        : `Unexpected provider response (HTTP ${response.status}).`,
+      false,
+    );
+  }
   if (data.ERROR?.length) {
     throw new ProviderError(errorText(data.ERROR[0]?.MESSAGE), true);
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
   ChevronRight,
@@ -63,6 +64,12 @@ const legalLinks: NavLink[] = [
 export default function MobileNav() {
   const { t } = useT();
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // The drawer is rendered into <body> via a portal, because this component
+  // lives inside the header, whose backdrop-blur would otherwise trap the
+  // fixed overlay inside the header's box instead of covering the viewport.
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -95,9 +102,9 @@ export default function MobileNav() {
         <Menu size={24} />
       </button>
 
-      {isOpen && (
+      {isOpen && mounted && createPortal(
         <div
-          className="fixed inset-0 z-[60] bg-slate-950/75 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-[70] bg-slate-950/75 backdrop-blur-sm md:hidden"
           role="presentation"
           onClick={close}
         >
@@ -146,7 +153,8 @@ export default function MobileNav() {
               {t("footer.about")}
             </div>
           </aside>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );

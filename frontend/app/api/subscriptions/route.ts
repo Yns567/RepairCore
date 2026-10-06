@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
+import { PRICING_CURRENCY } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { InsufficientBalanceError, debitWallet } from "@/lib/wallet";
 
@@ -47,6 +48,7 @@ export async function POST(request: Request) {
 
       await debitWallet(tx, {
         userId,
+        currency: PRICING_CURRENCY.subscription,
         amount: plan.price,
         description: `Payment for ${plan.name}`,
         referenceType: "SUBSCRIPTION",

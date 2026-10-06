@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/authorization";
-import { MONEY_PATTERN, toMoney } from "@/lib/money";
+import { CURRENCIES, MONEY_PATTERN, toMoney } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { creditWallet } from "@/lib/wallet";
 
@@ -13,6 +13,7 @@ const adjustmentSchema = z.object({
     const amount = toMoney(value);
     return amount.gt(0) && amount.lte(10_000);
   }),
+  currency: z.enum(CURRENCIES),
   type: z.enum(["CREDIT", "REFUND", "ADJUSTMENT"]),
   description: z.string().trim().min(3).max(200),
 });
@@ -26,6 +27,7 @@ export async function addWalletCredit(formData: FormData) {
   const parsed = adjustmentSchema.safeParse({
     userId: formData.get("userId"),
     amount: formData.get("amount"),
+    currency: formData.get("currency"),
     type: formData.get("type"),
     description: formData.get("description"),
   });

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/authorization";
+import { isCurrency } from "@/lib/money";
 import { creditWallet } from "@/lib/wallet";
 
 const validStatuses = new Set(["PENDING", "PAID", "SHIPPED", "COMPLETED", "CANCELLED"]);
@@ -56,6 +57,7 @@ export async function updateOrderStatus(orderId: number, status: string) {
     if (order.paymentMethod === "BALANCE") {
       await creditWallet(tx, {
         userId: order.userId,
+        currency: isCurrency(order.currency) ? order.currency : "USD",
         amount: order.total,
         type: "REFUND",
         description: `Refund for cancelled order #${order.id}`,

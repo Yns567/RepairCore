@@ -71,7 +71,7 @@ export default async function StorePage({
             id={product.id}
             name={product.name}
             category={product.category ?? "Unknown"}
-            price={product.price.toString()}
+            price={`${product.price.toFixed(2)} MAD`}
             stock={product.stock > 0 ? "In Stock" : "Out of Stock"}
             image={product.image}
             slug={product.slug}

@@ -28,7 +28,7 @@ export default function EnrollButton({
     return (
       <div>
         <button type="button" disabled className="rounded-lg bg-slate-700 px-6 py-3 font-semibold text-slate-300">
-          Paid enrollment coming soon · {price} $
+          Paid enrollment coming soon · {price} MAD
         </button>
         <p className="mt-2 text-sm text-slate-400">Course checkout will be enabled with the payment provider.</p>
       </div>

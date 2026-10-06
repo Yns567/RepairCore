@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { getCart } from "@/lib/cart";
 import CheckoutForm from "@/components/cart/CheckoutForm";
-import { sumLines } from "@/lib/money";
+import { formatMoney, PRICING_CURRENCY, sumLines } from "@/lib/money";
 import { getWallet } from "@/lib/wallet";
 
 export default async function CheckoutPage() {
@@ -20,7 +20,7 @@ export default async function CheckoutPage() {
   }
 
   const total = sumLines(items.map((item) => ({ unitPrice: item.product.price, quantity: item.quantity })));
-  const wallet = await getWallet(session.user.id);
+  const wallet = await getWallet(session.user.id, PRICING_CURRENCY.store);
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-16">
@@ -31,7 +31,7 @@ export default async function CheckoutPage() {
           Items: {items.reduce((n, i) => n + i.quantity, 0)}
         </p>
         <p className="mt-2 text-2xl font-bold text-blue-400">
-          {total.toFixed(2)} $
+          {formatMoney(total, PRICING_CURRENCY.store)}
         </p>
       </div>
 

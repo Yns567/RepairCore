@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { Prisma } from "@/lib/generated/prisma";
-import { toMoney } from "@/lib/money";
+import { CURRENCIES, type Currency, toMoney } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 
 type WalletClient = Pick<typeof prisma, "wallet" | "walletTransaction">;
@@ -14,6 +14,7 @@ export class InsufficientBalanceError extends Error {
 
 type WalletEntry = {
   userId: string;
+  currency: Currency;
   amount: Prisma.Decimal.Value;
   type: "CREDIT" | "DEBIT" | "REFUND" | "ADJUSTMENT";
   description: string;
@@ -30,21 +31,26 @@ function positiveAmount(value: Prisma.Decimal.Value) {
   return amount;
 }
 
-async function ensureWallet(client: WalletClient, userId: string) {
+async function ensureWallet(client: WalletClient, userId: string, currency: Currency) {
   return client.wallet.upsert({
-    where: { userId },
+    where: { userId_currency: { userId, currency } },
     update: {},
-    create: { userId, balance: 0, currency: "USD" },
+    create: { userId, balance: 0, currency },
   });
 }
 
-export async function getWallet(userId: string) {
-  return ensureWallet(prisma, userId);
+export async function getWallet(userId: string, currency: Currency) {
+  return ensureWallet(prisma, userId, currency);
+}
+
+/** All wallets of a user, one per supported currency, in a stable order. */
+export async function getWallets(userId: string) {
+  return Promise.all(CURRENCIES.map((currency) => ensureWallet(prisma, userId, currency)));
 }
 
 export async function creditWallet(client: WalletClient, entry: WalletEntry) {
   const amount = positiveAmount(entry.amount);
-  const wallet = await ensureWallet(client, entry.userId);
+  const wallet = await ensureWallet(client, entry.userId, entry.currency);
   const updatedWallet = await client.wallet.update({
     where: { id: wallet.id },
     data: { balance: { increment: amount } },
@@ -68,7 +74,7 @@ export async function creditWallet(client: WalletClient, entry: WalletEntry) {
 
 export async function debitWallet(client: WalletClient, entry: Omit<WalletEntry, "type">) {
   const amount = positiveAmount(entry.amount);
-  const wallet = await ensureWallet(client, entry.userId);
+  const wallet = await ensureWallet(client, entry.userId, entry.currency);
   const debit = await client.wallet.updateMany({
     where: { id: wallet.id, balance: { gte: amount } },
     data: { balance: { decrement: amount } },

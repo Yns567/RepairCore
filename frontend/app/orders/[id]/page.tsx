@@ -56,7 +56,7 @@ export default async function OrderConfirmationPage({
               {item.product.name} × {item.quantity}
             </span>
             <span className="text-blue-400">
-              {(Number(item.unitPrice) * item.quantity).toFixed(2)} $
+              {item.unitPrice.times(item.quantity).toFixed(2)} {order.currency}
             </span>
           </div>
         ))}

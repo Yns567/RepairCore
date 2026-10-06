@@ -53,7 +53,7 @@ export default function CartLineItem({
 
       <div className="flex-1">
         <p className="font-semibold text-white">{name}</p>
-        <p className="mt-1 text-blue-400">{price} $</p>
+        <p className="mt-1 text-blue-400">{price} MAD</p>
         {message && <p className="mt-1 text-xs text-rose-400">{message}</p>}
       </div>
 

@@ -80,7 +80,7 @@ export default async function AdminOrdersPage({
               <td className="px-4 py-3">
                 {order.items.reduce((n, i) => n + i.quantity, 0)}
               </td>
-              <td className="px-4 py-3">{order.total.toString()} $</td>
+              <td className="px-4 py-3">{order.total.toFixed(2)} {order.currency}</td>
               <td className="px-4 py-3">
                 <span
                   className={`rounded-full px-2 py-1 text-xs font-medium ${statusStyles[order.status]}`}

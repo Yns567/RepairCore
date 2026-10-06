@@ -35,7 +35,7 @@ export default async function ProductsPage() {
               <tr key={product.id} className="transition-colors hover:bg-gray-50">
                 <td className="px-4 py-4 font-medium text-gray-900">{product.name}</td>
                 <td className="px-4 py-4">{product.category ?? "—"}</td>
-                <td className="px-4 py-4">${Number(product.price).toFixed(2)}</td>
+                <td className="px-4 py-4">{product.price.toFixed(2)} MAD</td>
                 <td className="px-4 py-4">{product.stock}</td>
                 <td className="px-4 py-4">{product.status}</td>
                 <td className="px-4 py-4 text-right">

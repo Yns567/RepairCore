@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { getCart } from "@/lib/cart";
-import { type Money, sumLines, toMoney } from "@/lib/money";
+import { type Money, PRICING_CURRENCY, sumLines, toMoney } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { InsufficientBalanceError, debitWallet } from "@/lib/wallet";
 
@@ -81,6 +81,7 @@ export async function POST(request: Request) {
           status: parsed.data.paymentMethod === "BALANCE" ? "PAID" : "PENDING",
           paymentMethod: parsed.data.paymentMethod,
           total,
+          currency: PRICING_CURRENCY.store,
           fullName: parsed.data.fullName,
           phone: parsed.data.phone,
           address: parsed.data.address,
@@ -94,6 +95,7 @@ export async function POST(request: Request) {
       if (parsed.data.paymentMethod === "BALANCE") {
         await debitWallet(tx, {
           userId,
+          currency: PRICING_CURRENCY.store,
           amount: total,
           description: `Payment for order #${created.id}`,
           referenceType: "ORDER",

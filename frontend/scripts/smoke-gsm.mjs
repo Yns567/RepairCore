@@ -35,7 +35,7 @@ try {
       name: "RepairCore smoke test",
       email,
       hashedPassword: await bcrypt.hash(password, 12),
-      wallet: { create: { balance: 25, currency: "USD" } },
+      wallets: { create: { balance: 25, currency: "USD" } },
     },
   });
   userId = user.id;
@@ -104,7 +104,7 @@ try {
 
   const [order, wallet] = await Promise.all([
     prisma.gsmServiceOrder.findUniqueOrThrow({ where: { id: orderResult.id } }),
-    prisma.wallet.findUniqueOrThrow({ where: { userId } }),
+    prisma.wallet.findUniqueOrThrow({ where: { userId_currency: { userId, currency: "USD" } } }),
   ]);
 
   if (!order.imei?.startsWith("v1:")) throw new Error("IMEI was not encrypted at rest.");

@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { formatMoney } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
-import { getWallet } from "@/lib/wallet";
+import { getWallets } from "@/lib/wallet";
 
 export default async function AccountPage() {
   const session = await auth();
@@ -13,14 +14,14 @@ export default async function AccountPage() {
     redirect("/login?next=/account");
   }
 
-  const [orderCount, subscriptionCount, activeSubscriptionCount, serviceOrderCount, wallet] = await Promise.all([
+  const [orderCount, subscriptionCount, activeSubscriptionCount, serviceOrderCount, wallets] = await Promise.all([
     prisma.order.count({ where: { userId } }),
     prisma.subscription.count({ where: { userId } }),
     prisma.subscription.count({
       where: { userId, status: "ACTIVE", endDate: { gt: new Date() } },
     }),
     prisma.gsmServiceOrder.count({ where: { userId } }),
-    getWallet(userId),
+    getWallets(userId),
   ]);
 
   return (
@@ -36,7 +37,7 @@ export default async function AccountPage() {
         <AccountStat label="Software plans" value={subscriptionCount} detail={`${activeSubscriptionCount} currently active`} href="/account/subscriptions" />
         <AccountStat label="GSM services" value={serviceOrderCount} detail="Track service requests" href="/account/services" />
         <AccountStat label="Learning" value="Courses" detail="Continue learning and enroll" href="/learning" />
-        <AccountStat label="Store balance" value={`${wallet.balance.toString()} ${wallet.currency}`} detail="View balance history" href="/account/wallet" />
+        <AccountStat label="Store balance" value={wallets.map((wallet) => formatMoney(wallet.balance, wallet.currency)).join(" · ")} detail="Top up or view history" href="/account/wallet" />
       </div>
 
       <div className="mt-8 rounded-2xl border border-slate-800 bg-[#111827] p-6">

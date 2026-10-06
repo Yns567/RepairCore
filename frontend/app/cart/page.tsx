@@ -46,7 +46,7 @@ export default async function CartPage() {
       <div className="mt-10 flex items-center justify-between rounded-2xl border border-slate-800 bg-[#111827] p-6">
         <span className="text-lg text-slate-300">Total</span>
         <span className="text-2xl font-bold text-blue-400">
-          {total.toFixed(2)} $
+          {total.toFixed(2)} MAD
         </span>
       </div>
 

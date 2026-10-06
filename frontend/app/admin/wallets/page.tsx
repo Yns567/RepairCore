@@ -1,10 +1,11 @@
+import { CURRENCIES, formatMoney } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { addWalletCredit } from "./actions";
 
 export default async function AdminWalletsPage() {
   const [users, transactions] = await Promise.all([
     prisma.user.findMany({
-      include: { wallet: true },
+      include: { wallets: { orderBy: { currency: "asc" } } },
       orderBy: { createdAt: "desc" },
       take: 100,
     }),
@@ -32,11 +33,16 @@ export default async function AdminWalletsPage() {
               {users.map((user) => (
                 <tr key={user.id}>
                   <td className="px-4 py-4"><p className="font-medium text-gray-900">{user.name || "Customer"}</p><p className="text-xs text-gray-500">{user.email}</p></td>
-                  <td className="px-4 py-4 font-semibold text-gray-900">{user.wallet?.balance.toString() ?? "0.00"} {user.wallet?.currency ?? "USD"}</td>
+                  <td className="px-4 py-4 font-semibold text-gray-900">{user.wallets.length === 0 ? "—" : user.wallets.map((wallet) => (
+                    <p key={wallet.id}>{formatMoney(wallet.balance, wallet.currency)}</p>
+                  ))}</td>
                   <td className="px-4 py-3">
                     <form action={addWalletCredit} className="flex items-center gap-2">
                       <input type="hidden" name="userId" value={user.id} />
                       <input name="amount" type="number" min="0.01" step="0.01" required placeholder="Amount" className="w-24 rounded border border-gray-300 bg-white px-2 py-1.5 text-gray-900 placeholder:text-gray-400" />
+                      <select name="currency" defaultValue="MAD" className="rounded border border-gray-300 bg-white px-2 py-1.5 text-gray-900">
+                        {CURRENCIES.map((currency) => <option key={currency} value={currency}>{currency}</option>)}
+                      </select>
                       <select name="type" defaultValue="CREDIT" className="rounded border border-gray-300 bg-white px-2 py-1.5 text-gray-900">
                         <option value="CREDIT">Credit</option>
                         <option value="REFUND">Refund</option>
@@ -68,7 +74,7 @@ export default async function AdminWalletsPage() {
                   <tr key={transaction.id}>
                     <td className="px-4 py-3"><p className="font-medium text-gray-900">{transaction.wallet.user.name || "Customer"}</p><p className="text-xs text-gray-500">{transaction.wallet.user.email}</p></td>
                     <td className="px-4 py-3 font-medium text-gray-700">{transaction.type}</td>
-                    <td className="px-4 py-3 font-semibold text-gray-900">{transaction.type === "DEBIT" ? "−" : "+"}{transaction.amount.toString()} USD</td>
+                    <td className="px-4 py-3 font-semibold text-gray-900">{transaction.type === "DEBIT" ? "−" : "+"}{formatMoney(transaction.amount, transaction.wallet.currency)}</td>
                     <td className="px-4 py-3 text-gray-600">{transaction.description}</td>
                     <td className="px-4 py-3 text-gray-600">{transaction.createdAt.toLocaleString("en-US")}</td>
                   </tr>

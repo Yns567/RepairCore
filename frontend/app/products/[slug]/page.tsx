@@ -68,7 +68,7 @@ export default async function ProductPage({ params }: PageProps) {
             </div>
 
             <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">{product.name}</h1>
-            <p className="mt-4 text-3xl font-extrabold text-blue-600">${Number(product.price).toFixed(2)}</p>
+            <p className="mt-4 text-3xl font-extrabold text-blue-600">{product.price.toFixed(2)} MAD</p>
 
             <p className="mt-5 text-sm leading-6 text-slate-600">
               {product.description || "Professional repair equipment selected for technicians who need reliable and precise results."}
@@ -129,7 +129,7 @@ export default async function ProductPage({ params }: PageProps) {
             </div>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {relatedProducts.map((item) => (
-                <ProductCard key={item.id} id={item.id} slug={item.slug} name={item.name} category={item.category ?? "Tools"} price={`$${Number(item.price).toFixed(2)}`} stock={item.stock > 0 ? "In Stock" : "Out of Stock"} image={item.image} />
+                <ProductCard key={item.id} id={item.id} slug={item.slug} name={item.name} category={item.category ?? "Tools"} price={`${item.price.toFixed(2)} MAD`} stock={item.stock > 0 ? "In Stock" : "Out of Stock"} image={item.image} />
               ))}
             </div>
           </div>

@@ -16,9 +16,26 @@ export function sumLines(lines: { unitPrice: Prisma.Decimal.Value; quantity: num
   );
 }
 
-/** Formats a monetary value for display with two decimals. */
-export function formatMoney(value: Prisma.Decimal.Value): string {
-  return toMoney(value).toFixed(2);
+export const CURRENCIES = ["MAD", "USD"] as const;
+export type Currency = (typeof CURRENCIES)[number];
+
+/** Which currency each part of the catalog is priced in. Balances never convert. */
+export const PRICING_CURRENCY = {
+  store: "MAD",
+  course: "MAD",
+  gsmService: "USD",
+  subscription: "USD",
+} as const satisfies Record<string, Currency>;
+
+export function isCurrency(value: unknown): value is Currency {
+  return typeof value === "string" && (CURRENCIES as readonly string[]).includes(value);
+}
+
+/** Formats a monetary value for display, e.g. "1250.00 MAD" or "$24.99". */
+export function formatMoney(value: Prisma.Decimal.Value, currency?: string): string {
+  const amount = toMoney(value).toFixed(2);
+  if (currency === "USD") return `$${amount}`;
+  return currency ? `${amount} ${currency}` : amount;
 }
 
 /** Zod-friendly check: a positive amount with at most 2 decimal places. */

@@ -2,12 +2,25 @@
 // npm install --save-dev prisma dotenv
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
+
+// Migrations and Studio need a direct connection. When only Neon's pooled URL is
+// provided, derive the direct one (drop "-pooler" and channel binding).
+function directUrl() {
+  if (process.env["DIRECT_URL"]) return process.env["DIRECT_URL"];
+  const pooled = process.env["DATABASE_URL"];
+  if (!pooled) return undefined;
+  return pooled
+    .replace(/-pooler(\.[^/@]*neon\.tech)/, "$1")
+    .replace(/[?&]channel_binding=[^&]*/, (match) => (match.startsWith("?") ? "?" : ""))
+    .replace("?&", "?");
+}
+
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DIRECT_URL"] ?? process.env["DATABASE_URL"],
+    url: directUrl(),
   },
 });

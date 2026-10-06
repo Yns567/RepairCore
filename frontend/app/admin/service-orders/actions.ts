@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/authorization";
 import { prisma } from "@/lib/prisma";
+import { isCurrency } from "@/lib/money";
 import { creditWallet } from "@/lib/wallet";
 
 const refundableStatuses = new Set(["REJECTED", "CANCELLED"]);
@@ -63,6 +64,7 @@ export async function updateGsmServiceOrder(formData: FormData) {
       if (refundClaim.count === 1) {
         await creditWallet(tx, {
           userId: order.userId,
+          currency: isCurrency(order.currency) ? order.currency : "USD",
           amount: order.price,
           type: "REFUND",
           description: `Refund for GSM service order #${order.id}: ${order.service.name}`,

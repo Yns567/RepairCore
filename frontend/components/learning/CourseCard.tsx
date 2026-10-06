@@ -57,7 +57,7 @@ export default function CourseCard({
         <div className="flex items-center justify-between pt-2">
           <span className="text-sm text-slate-500">{lessonCount} lessons</span>
           <span className="text-lg font-bold text-blue-400">
-            {isFree ? "Free" : `${price} $`}
+            {isFree ? "Free" : `${price} MAD`}
           </span>
         </div>
       </div>

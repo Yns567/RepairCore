@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
-import { MONEY_PATTERN, toMoney } from "@/lib/money";
+import { MONEY_PATTERN, PRICING_CURRENCY, toMoney } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { encryptSensitiveValue } from "@/lib/sensitive-data";
 import { debitWallet, InsufficientBalanceError } from "@/lib/wallet";
@@ -94,6 +94,7 @@ export async function POST(request: Request) {
           userId,
           serviceId: service.id,
           price: service.price,
+          currency: PRICING_CURRENCY.gsmService,
           imei: service.inputType === "IMEI" ? encryptSensitiveValue(parsed.data.imei) : null,
           accountUsername: service.inputType === "USERNAME" ? parsed.data.accountUsername : null,
           deviceModel: parsed.data.deviceModel || null,
@@ -104,6 +105,7 @@ export async function POST(request: Request) {
 
       await debitWallet(tx, {
         userId,
+        currency: PRICING_CURRENCY.gsmService,
         amount: currentPrice,
         description: `Payment for GSM service order #${createdOrder.id}`,
         referenceType: "GSM_SERVICE_ORDER",

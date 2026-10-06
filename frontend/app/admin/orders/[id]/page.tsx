@@ -74,9 +74,9 @@ export default async function AdminOrderDetailPage({
               <tr key={item.id} className="text-sm">
                 <td className="px-4 py-3">{item.product.name}</td>
                 <td className="px-4 py-3">{item.quantity}</td>
-                <td className="px-4 py-3">{item.unitPrice.toString()} $</td>
+                <td className="px-4 py-3">{item.unitPrice.toFixed(2)} {order.currency}</td>
                 <td className="px-4 py-3">
-                  {(Number(item.unitPrice) * item.quantity).toFixed(2)} $
+                  {item.unitPrice.times(item.quantity).toFixed(2)} {order.currency}
                 </td>
               </tr>
             ))}

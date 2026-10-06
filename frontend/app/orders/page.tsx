@@ -47,7 +47,7 @@ export default async function OrdersPage() {
                 <p className="mt-1 text-sm text-slate-400">{order.createdAt.toLocaleDateString("en-US")} · {order._count.items} item{order._count.items === 1 ? "" : "s"}</p>
               </div>
               <div className="flex items-center gap-4">
-                <span className="font-semibold text-white">${Number(order.total).toFixed(2)}</span>
+                <span className="font-semibold text-white">{order.total.toFixed(2)} {order.currency}</span>
                 <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusClasses[order.status] ?? "bg-slate-700 text-slate-200"}`}>{order.status}</span>
               </div>
             </Link>

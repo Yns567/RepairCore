@@ -9,6 +9,7 @@ const links = [
   { href: "/admin/service-orders", label: "Service Orders" },
   { href: "/admin/subscriptions", label: "Subscriptions" },
   { href: "/admin/wallets", label: "Balances" },
+  { href: "/admin/top-ups", label: "Top-up requests" },
 ];
 
 export default function AdminSidebar() {

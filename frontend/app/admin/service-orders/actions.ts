@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/authorization";
 import { prisma } from "@/lib/prisma";
-import { isCurrency } from "@/lib/money";
+import { emailHtml, notify, siteUrl } from "@/lib/email";
+import { formatMoney, isCurrency } from "@/lib/money";
 import { creditWallet } from "@/lib/wallet";
 
 const refundableStatuses = new Set(["REJECTED", "CANCELLED"]);
@@ -34,14 +35,24 @@ export async function updateGsmServiceOrder(formData: FormData) {
   const { orderId, status, result } = parsed.data;
   const refundRequested = refundableStatuses.has(status);
 
+  type Previous = { status: string; email: string; serviceName: string; price: string; currency: string };
+  let previous: Previous | null = null;
+
   await prisma.$transaction(async (tx) => {
     const order = await tx.gsmServiceOrder.findUnique({
       where: { id: orderId },
-      include: { service: { select: { name: true } } },
+      include: { service: { select: { name: true } }, user: { select: { email: true } } },
     });
     if (!order) {
       throw new Error("Service order not found.");
     }
+    previous = {
+      status: order.status,
+      email: order.user.email,
+      serviceName: order.service.name,
+      price: order.price.toString(),
+      currency: order.currency,
+    };
 
     if (order.refundedAt) {
       if (!refundRequested) {
@@ -101,6 +112,22 @@ export async function updateGsmServiceOrder(formData: FormData) {
       throw new Error("This order was refunded and can no longer return to a non-refunded status.");
     }
   });
+
+  // Assigned inside the transaction callback, which TypeScript cannot track.
+  const before = previous as Previous | null;
+  if (before && before.status !== status) {
+    const refunded = refundRequested ? ` ${formatMoney(before.price, before.currency)} was returned to your balance.` : "";
+    const lines = [
+      `Your GSM order #${orderId} (${before.serviceName}) is now ${status}.${refunded}`,
+      ...(result && status === "COMPLETED" ? [`Result: ${result}`] : []),
+    ];
+    await notify({
+      to: before.email,
+      subject: `GSM order #${orderId}: ${status}`,
+      text: `${lines.join("\n")}\n${siteUrl()}/account/services`,
+      html: emailHtml(lines, { label: "View my orders", url: `${siteUrl()}/account/services` }),
+    });
+  }
 
   revalidatePath("/admin/service-orders");
   revalidatePath("/admin/wallets");

@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/authorization";
-import { isCurrency, MONEY_PATTERN, toMoney } from "@/lib/money";
+import { emailHtml, notify, siteUrl } from "@/lib/email";
+import { formatMoney, isCurrency, MONEY_PATTERN, toMoney } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { creditWallet } from "@/lib/wallet";
 
@@ -32,10 +33,10 @@ export async function reviewTopUp(formData: FormData) {
     throw new Error("Enter the amount to credit (max 2 decimals).");
   }
 
-  await prisma.$transaction(async (tx) => {
+  const reviewed = await prisma.$transaction(async (tx) => {
     const request = await tx.topUpRequest.findUnique({
       where: { id },
-      select: { id: true, userId: true, currency: true, bank: true, status: true },
+      select: { id: true, userId: true, currency: true, bank: true, status: true, user: { select: { email: true } } },
     });
     if (!request) throw new Error("Top-up request not found.");
 
@@ -65,6 +66,22 @@ export async function reviewTopUp(formData: FormData) {
         createdById: adminId,
       });
     }
+    return request;
+  });
+
+  const approved = decision === "APPROVE";
+  await notify({
+    to: reviewed.user.email,
+    subject: approved ? `Top-up #${id} approved` : `Top-up #${id} was not approved`,
+    text: approved
+      ? `We credited ${formatMoney(parsed.data.creditedAmount, reviewed.currency)} to your balance.${adminNote ? `\nNote: ${adminNote}` : ""}\n${siteUrl()}/account/wallet`
+      : `We could not verify your transfer for top-up #${id}.${adminNote ? `\nReason: ${adminNote}` : ""}\nContact us if you think this is a mistake.`,
+    html: emailHtml(
+      approved
+        ? [`We credited ${formatMoney(parsed.data.creditedAmount, reviewed.currency)} to your balance.`, ...(adminNote ? [`Note: ${adminNote}`] : [])]
+        : [`We could not verify your transfer for top-up #${id}.`, ...(adminNote ? [`Reason: ${adminNote}`] : []), "Contact us if you think this is a mistake."],
+      { label: "View my balance", url: `${siteUrl()}/account/wallet` },
+    ),
   });
 
   revalidatePath("/admin/top-ups");

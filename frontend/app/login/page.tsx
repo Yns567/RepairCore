@@ -63,6 +63,12 @@ function LoginForm() {
           className="w-full rounded-lg border border-slate-800 bg-[#111827] px-4 py-3 text-white placeholder:text-slate-500"
         />
 
+        <p className="text-right text-sm">
+          <Link href="/forgot-password" className="text-blue-400 hover:underline">
+            Forgot password?
+          </Link>
+        </p>
+
         {error && <p className="text-sm text-red-400">{error}</p>}
 
         <button

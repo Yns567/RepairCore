@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import EnrollButton from "@/components/learning/EnrollButton";
+import { getT } from "@/lib/i18n/server";
 
 export default async function CourseDetailPage({
   params,
@@ -10,6 +11,7 @@ export default async function CourseDetailPage({
 }) {
   const { slug } = await params;
   const session = await auth();
+  const { t } = await getT();
 
   const course = await prisma.course.findUnique({
     where: { slug },
@@ -48,11 +50,11 @@ export default async function CourseDetailPage({
         />
       </div>
 
-      <h2 className="mt-12 text-2xl font-bold text-white">Course Content</h2>
+      <h2 className="mt-12 text-2xl font-bold text-white">{t("learning.content")}</h2>
 
       <div className="mt-6 space-y-3">
         {course.lessons.length === 0 && (
-          <p className="text-slate-500">Lessons coming soon.</p>
+          <p className="text-slate-500">{t("learning.soon")}</p>
         )}
 
         {course.lessons.map((lesson, index) => (

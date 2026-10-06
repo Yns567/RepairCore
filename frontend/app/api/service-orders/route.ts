@@ -3,6 +3,7 @@ import { isBlockedService, submitOrderToProvider } from "@/lib/gsm-provider";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { MONEY_PATTERN, PRICING_CURRENCY, toMoney } from "@/lib/money";
+import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import { encryptSensitiveValue } from "@/lib/sensitive-data";
 import { debitWallet, InsufficientBalanceError } from "@/lib/wallet";
@@ -39,14 +40,15 @@ function isValidImei(value: string) {
 
 export async function POST(request: Request) {
   const session = await auth();
+  const { t } = await getT();
   const userId = session?.user?.id;
   if (!userId) {
-    return NextResponse.json({ error: "Please sign in before placing an order." }, { status: 401 });
+    return NextResponse.json({ error: t("err.signIn") }, { status: 401 });
   }
 
   const parsed = requestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Please review the order details and try again." }, { status: 400 });
+    return NextResponse.json({ error: t("err.details") }, { status: 400 });
   }
 
   const priorOrder = await prisma.gsmServiceOrder.findUnique({
@@ -54,30 +56,30 @@ export async function POST(request: Request) {
   });
   if (priorOrder) {
     if (priorOrder.userId !== userId) {
-      return NextResponse.json({ error: "This request identifier is already in use." }, { status: 409 });
+      return NextResponse.json({ error: t("err.requestUsed") }, { status: 409 });
     }
     return NextResponse.json({ id: priorOrder.id, existing: true }, { status: 200 });
   }
 
   const service = await prisma.gsmService.findUnique({ where: { id: parsed.data.serviceId } });
   if (!service || service.status !== "ACTIVE" || (service.externalId && isBlockedService(service.name, service.provider))) {
-    return NextResponse.json({ error: "This service is not available right now." }, { status: 404 });
+    return NextResponse.json({ error: t("err.serviceUnavailable") }, { status: 404 });
   }
 
   const currentPrice = toMoney(service.price);
   if (!currentPrice.equals(toMoney(parsed.data.expectedPrice))) {
     return NextResponse.json(
-      { error: "The service price changed. Refresh the page and review the new price." },
+      { error: t("err.priceChanged") },
       { status: 409 },
     );
   }
 
   if (service.inputType === "IMEI" && !isValidImei(parsed.data.imei)) {
-    return NextResponse.json({ error: "Enter a valid 15-digit IMEI." }, { status: 400 });
+    return NextResponse.json({ error: t("err.imei") }, { status: 400 });
   }
 
   if (service.inputType === "USERNAME" && parsed.data.accountUsername.length < 2) {
-    return NextResponse.json({ error: "Enter the existing tool account username or email." }, { status: 400 });
+    return NextResponse.json({ error: t("err.username") }, { status: 400 });
   }
 
   try {
@@ -130,7 +132,7 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     if (error instanceof InsufficientBalanceError) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ error: t("err.balance") }, { status: 400 });
     }
 
     if ((error as { code?: string }).code === "P2002") {
@@ -143,7 +145,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { error: "We could not create this service order. Your balance was not charged." },
+      { error: t("err.serviceFailed") },
       { status: 500 },
     );
   }

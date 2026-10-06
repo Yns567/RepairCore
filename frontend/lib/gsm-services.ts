@@ -21,6 +21,17 @@ export const gsmServiceCategories = [
 
 export type GsmServiceCategory = (typeof gsmServiceCategories)[number]["value"];
 
+/** Translation keys for the customer-facing category names. */
+export const gsmCategoryKeys = {
+  IMEI: "nav.imeiServices",
+  SERVER_CREDIT: "nav.toolCredits",
+  TOOL_RENTAL: "nav.toolRent",
+} as const;
+
+export function gsmCategoryKey(category: string): string {
+  return gsmCategoryKeys[category as GsmServiceCategory] ?? category;
+}
+
 export function getGsmServiceCategory(category: string) {
   return gsmServiceCategories.find((item) => item.value === category);
 }

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useT } from "@/lib/i18n/client";
 
 export default function EnrollButton({
   courseId,
@@ -13,6 +14,7 @@ export default function EnrollButton({
   isEnrolled: boolean;
   price: string;
 }) {
+  const { t } = useT();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -22,13 +24,13 @@ export default function EnrollButton({
   if (isEnrolled) {
     return (
       <span className="inline-block rounded-lg bg-green-600 px-6 py-3 font-semibold text-white">
-        You&apos;re enrolled in this course ✓
+        {t("enroll.enrolled")}
       </span>
     );
   }
 
   function handleClick() {
-    if (isPaid && !confirm(`Pay ${price} MAD from your dirham balance to enroll?`)) return;
+    if (isPaid && !confirm(t("enroll.confirm", { price }))) return;
     setError(null);
     startTransition(async () => {
       const res = await fetch("/api/enrollments", {
@@ -43,7 +45,7 @@ export default function EnrollButton({
       }
       if (!res.ok) {
         const body = await res.json().catch(() => null);
-        setError(body?.error ?? "We could not enroll you. Please try again.");
+        setError(body?.error ?? t("err.enrollFailed"));
         return;
       }
 
@@ -58,12 +60,12 @@ export default function EnrollButton({
         disabled={isPending}
         className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-500 disabled:bg-slate-700"
       >
-        {isPending ? "Enrolling..." : isPaid ? `Enroll · ${price} MAD` : "Enroll for Free"}
+        {isPending ? t("enroll.enrolling") : isPaid ? t("enroll.paid", { price }) : t("enroll.free")}
       </button>
       {error && (
         <p className="mt-2 text-sm text-red-400">
           {error}{" "}
-          {mentionsBalance(error) && <Link href="/account/wallet/top-up" className="underline">Top up balance</Link>}
+          {mentionsBalance(error) && <Link href="/account/wallet/top-up" className="underline">{t("enroll.topUp")}</Link>}
         </p>
       )}
     </div>

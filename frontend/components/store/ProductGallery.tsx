@@ -63,7 +63,7 @@ export default function ProductGallery({
           className="relative object-contain p-4"
         />
         {category && (
-          <span className="absolute left-4 top-4 rounded-md bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-blue-700 shadow-sm ring-1 ring-slate-200">
+          <span className="absolute start-4 top-4 rounded-md bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-blue-700 shadow-sm ring-1 ring-slate-200">
             {category}
           </span>
         )}

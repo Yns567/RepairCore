@@ -4,8 +4,12 @@ import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useT } from "@/lib/i18n/client";
+
+const inputClass = "w-full rounded-lg border border-slate-800 bg-[#111827] px-4 py-3 text-white placeholder:text-slate-500";
 
 function LoginForm() {
+  const { t } = useT();
   const router = useRouter();
   const searchParams = useSearchParams();
   // NextAuth's middleware redirects unauthenticated visitors to
@@ -33,7 +37,7 @@ function LoginForm() {
     setLoading(false);
 
     if (res?.error) {
-      setError("Invalid email or password");
+      setError(t("auth.invalid"));
       return;
     }
 
@@ -43,30 +47,14 @@ function LoginForm() {
 
   return (
     <main className="mx-auto max-w-md px-6 py-24">
-      <h1 className="text-3xl font-bold text-white">Sign In</h1>
+      <h1 className="text-3xl font-bold text-white">{t("auth.signIn")}</h1>
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="w-full rounded-lg border border-slate-800 bg-[#111827] px-4 py-3 text-white placeholder:text-slate-500"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className="w-full rounded-lg border border-slate-800 bg-[#111827] px-4 py-3 text-white placeholder:text-slate-500"
-        />
+        <input type="email" placeholder={t("auth.email")} value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" className={inputClass} />
+        <input type="password" placeholder={t("auth.password")} value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" className={inputClass} />
 
-        <p className="text-right text-sm">
-          <Link href="/forgot-password" className="text-blue-400 hover:underline">
-            Forgot password?
-          </Link>
+        <p className="text-end text-sm">
+          <Link href="/forgot-password" className="text-blue-400 hover:underline">{t("auth.forgot")}</Link>
         </p>
 
         {error && <p className="text-sm text-red-400">{error}</p>}
@@ -76,23 +64,26 @@ function LoginForm() {
           disabled={loading}
           className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white hover:bg-blue-500 disabled:bg-slate-700"
         >
-          {loading ? "Signing in..." : "Sign In"}
+          {loading ? t("auth.signingIn") : t("auth.signIn")}
         </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-slate-400">
-        Don&apos;t have an account?{" "}
-        <Link href="/register" className="text-blue-400 hover:underline">
-          Create one
-        </Link>
+        {t("auth.noAccount")}{" "}
+        <Link href="/register" className="text-blue-400 hover:underline">{t("auth.createOne")}</Link>
       </p>
     </main>
   );
 }
 
+function Loading() {
+  const { t } = useT();
+  return <main className="mx-auto max-w-md px-6 py-24 text-slate-400">{t("auth.loading")}</main>;
+}
+
 export default function LoginPage() {
   return (
-    <Suspense fallback={<main className="mx-auto max-w-md px-6 py-24 text-slate-400">Loading sign in…</main>}>
+    <Suspense fallback={<Loading />}>
       <LoginForm />
     </Suspense>
   );

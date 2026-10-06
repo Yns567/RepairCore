@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 
 const registrationSchema = z.object({
@@ -10,15 +11,16 @@ const registrationSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const { t } = await getT();
   const parsed = registrationSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Use a name, a valid email, and a password of at least 8 characters." }, { status: 400 });
+    return NextResponse.json({ error: t("auth.registerInvalid") }, { status: 400 });
   }
 
   const email = parsed.data.email.toLowerCase();
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    return NextResponse.json({ error: "This email is already registered." }, { status: 409 });
+    return NextResponse.json({ error: t("auth.registerExists") }, { status: 409 });
   }
 
   const user = await prisma.user.create({

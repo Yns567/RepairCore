@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { Clock3, RotateCcw, ShieldCheck } from "lucide-react";
 import { auth } from "@/auth";
 import { refreshProviderOrders } from "@/lib/gsm-provider";
+import { getT } from "@/lib/i18n/server";
+import { formatMoney } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { decryptSensitiveValue } from "@/lib/sensitive-data";
 
@@ -14,18 +16,10 @@ const statusStyles: Record<string, string> = {
   CANCELLED: "border-slate-600 bg-slate-700/40 text-slate-300",
 };
 
-const statusLabels: Record<string, string> = {
-  PENDING: "Pending",
-  PROCESSING: "Processing",
-  COMPLETED: "Completed",
-  REJECTED: "Rejected",
-  CANCELLED: "Cancelled",
-};
-
-const categoryLabels: Record<string, string> = {
-  IMEI: "IMEI service",
-  SERVER_CREDIT: "Tool credits",
-  TOOL_RENTAL: "Tool rental",
+const categoryKeys: Record<string, string> = {
+  IMEI: "nav.imeiServices",
+  SERVER_CREDIT: "nav.toolCredits",
+  TOOL_RENTAL: "nav.toolRent",
 };
 
 export default async function AccountServicesPage() {
@@ -38,6 +32,7 @@ export default async function AccountServicesPage() {
 
   // Pull fresh results from the provider (throttled per order) before showing them.
   await refreshProviderOrders({ userId }, 5);
+  const { t, tKey, formatDay } = await getT();
 
   const orders = await prisma.gsmServiceOrder.findMany({
     where: { userId },
@@ -65,38 +60,38 @@ export default async function AccountServicesPage() {
     <main className="mx-auto max-w-5xl px-6 py-16">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold text-blue-400">MY ACCOUNT</p>
-          <h1 className="mt-2 text-3xl font-bold text-white">Service orders</h1>
+          <p className="text-sm font-semibold text-blue-400">{t("account.kicker")}</p>
+          <h1 className="mt-2 text-3xl font-bold text-white">{t("svc.title")}</h1>
           <p className="mt-2 text-slate-400">
-            Track IMEI checks, tool credits and rental requests.
+            {t("svc.subtitle")}
           </p>
         </div>
         <Link
           href="/services"
           className="rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500"
         >
-          Order a service
+          {t("svc.order")}
         </Link>
       </div>
 
       {orders.length === 0 ? (
         <section className="mt-8 rounded-2xl border border-slate-800 bg-[#111827] p-10 text-center">
           <ShieldCheck className="mx-auto text-blue-400" size={34} />
-          <h2 className="mt-4 text-lg font-semibold text-white">No service orders yet</h2>
+          <h2 className="mt-4 text-lg font-semibold text-white">{t("svc.emptyTitle")}</h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-400">
-            Your IMEI checks, credit purchases and tool rentals will appear here.
+            {t("svc.emptyText")}
           </p>
           <Link
             href="/services"
             className="mt-6 inline-block text-sm font-semibold text-blue-400 hover:text-blue-300"
           >
-            Browse GSM services →
+            {t("svc.browse")}
           </Link>
         </section>
       ) : (
         <div className="mt-8 space-y-4">
           {orders.map((order) => {
-            const maskedImei = maskImei(order.imei);
+            const maskedImei = maskImei(order.imei, t("svc.protected"));
             const identifier = maskedImei ?? order.accountUsername;
 
             return (
@@ -109,33 +104,33 @@ export default async function AccountServicesPage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-semibold text-white">{order.service.name}</p>
                       <span className="rounded-full bg-slate-800 px-2.5 py-1 text-[11px] font-medium text-slate-300">
-                        {categoryLabels[order.service.category] ?? order.service.category}
+                        {tKey(categoryKeys[order.service.category] ?? "", order.service.category)}
                       </span>
                     </div>
                     <p className="mt-2 text-sm text-slate-400">
-                      Order #{order.id} · {order.createdAt.toLocaleDateString("en-US")}
+                      {t("orders.number", { id: order.id })} · {formatDay(order.createdAt)}
                     </p>
                     {(identifier || order.deviceModel) && (
                       <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-slate-300">
                         {identifier && (
                           <span>
-                            {maskedImei ? "IMEI" : "Account"}:{" "}
+                            {maskedImei ? t("svc.imei") : t("svc.account")}:{" "}
                             <span className="font-mono text-slate-200">{identifier}</span>
                           </span>
                         )}
-                        {order.deviceModel && <span>Device: {order.deviceModel}</span>}
+                        {order.deviceModel && <span>{t("svc.device", { model: order.deviceModel })}</span>}
                       </div>
                     )}
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3">
-                    <span className="font-bold text-white">${Number(order.price).toFixed(2)}</span>
+                    <span className="font-bold text-white">{formatMoney(order.price, "USD")}</span>
                     <span
                       className={`rounded-full border px-3 py-1 text-xs font-semibold ${
                         statusStyles[order.status] ?? "border-slate-600 bg-slate-700/40 text-slate-300"
                       }`}
                     >
-                      {statusLabels[order.status] ?? order.status}
+                      {tKey(`status.${order.status}`, order.status)}
                     </span>
                   </div>
                 </div>
@@ -145,7 +140,7 @@ export default async function AccountServicesPage() {
                     {order.result && (
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                          Service result
+                          {t("svc.result")}
                         </p>
                         <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-slate-200">
                           {order.result}
@@ -155,7 +150,7 @@ export default async function AccountServicesPage() {
                     {order.refundedAt && (
                       <p className={`${order.result ? "mt-4" : ""} flex items-center gap-2 text-sm font-medium text-emerald-300`}>
                         <RotateCcw size={15} />
-                        Refunded to your balance on {order.refundedAt.toLocaleDateString("en-US")}
+                        {t("svc.refunded", { date: formatDay(order.refundedAt) })}
                       </p>
                     )}
                   </div>
@@ -164,7 +159,7 @@ export default async function AccountServicesPage() {
                 {!order.result && !order.refundedAt && order.status !== "COMPLETED" && (
                   <div className="flex items-center gap-2 border-t border-slate-800 px-5 py-3 text-xs text-slate-500 sm:px-6">
                     <Clock3 size={14} />
-                    Updates and the final result will appear here.
+                    {t("svc.waiting")}
                   </div>
                 )}
               </article>
@@ -176,14 +171,14 @@ export default async function AccountServicesPage() {
   );
 }
 
-function maskImei(encryptedValue: string | null) {
+function maskImei(encryptedValue: string | null, protectedLabel: string) {
   if (!encryptedValue) return null;
 
   try {
     const decryptedValue = decryptSensitiveValue(encryptedValue);
     const lastFour = decryptedValue.replace(/\D/g, "").slice(-4);
-    return lastFour ? `${"•".repeat(11)}${lastFour}` : "IMEI protected";
+    return lastFour ? `${"•".repeat(11)}${lastFour}` : protectedLabel;
   } catch {
-    return "IMEI protected";
+    return protectedLabel;
   }
 }

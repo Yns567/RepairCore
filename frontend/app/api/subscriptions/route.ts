@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { PRICING_CURRENCY } from "@/lib/money";
+import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import { InsufficientBalanceError, debitWallet } from "@/lib/wallet";
 
@@ -16,19 +17,20 @@ const periodToDays: Record<string, number> = {
 
 export async function POST(request: Request) {
   const session = await auth();
+  const { t } = await getT();
   const userId = session?.user?.id;
   if (!userId) {
-    return NextResponse.json({ error: "Please sign in first." }, { status: 401 });
+    return NextResponse.json({ error: t("err.signIn") }, { status: 401 });
   }
 
   const parsed = planRequestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid subscription plan." }, { status: 400 });
+    return NextResponse.json({ error: t("err.planInvalid") }, { status: 400 });
   }
 
   const plan = await prisma.subscriptionPlan.findUnique({ where: { id: parsed.data.planId } });
   if (!plan || plan.status !== "ACTIVE") {
-    return NextResponse.json({ error: "This plan is no longer available." }, { status: 404 });
+    return NextResponse.json({ error: t("err.planUnavailable") }, { status: 404 });
   }
 
   try {
@@ -61,8 +63,8 @@ export async function POST(request: Request) {
     return NextResponse.json(result, { status: result.existing ? 200 : 201 });
   } catch (error) {
     if (error instanceof InsufficientBalanceError) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ error: t("err.balance") }, { status: 400 });
     }
-    return NextResponse.json({ error: "We could not create this subscription request." }, { status: 400 });
+    return NextResponse.json({ error: t("err.planFailed") }, { status: 400 });
   }
 }

@@ -1,14 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
-
-const statusLabels: Record<string, string> = {
-  PENDING: "Processing",
-  PAID: "Paid",
-  SHIPPED: "Shipped",
-  COMPLETED: "Completed",
-  CANCELLED: "Cancelled",
-};
 
 export default async function OrderConfirmationPage({
   params,
@@ -26,23 +19,26 @@ export default async function OrderConfirmationPage({
     notFound();
   }
 
-  const order = await prisma.order.findUnique({
-    where: { id: orderId },
-    include: { items: { include: { product: true } } },
-  });
+  const [order, { t, tKey }] = await Promise.all([
+    prisma.order.findUnique({
+      where: { id: orderId },
+      include: { items: { include: { product: true } } },
+    }),
+    getT(),
+  ]);
 
   if (!order || order.userId !== session.user.id) {
     notFound();
   }
 
+  const cancelled = order.status === "CANCELLED";
+
   return (
     <main className="mx-auto max-w-2xl px-6 py-16">
-      <div className="rounded-2xl border border-green-700 bg-green-950/30 p-6 text-center">
-        <h1 className="text-2xl font-bold text-white">
-          Order placed successfully ✓
-        </h1>
+      <div className={`rounded-2xl border p-6 text-center ${cancelled ? "border-rose-700 bg-rose-950/30" : "border-green-700 bg-green-950/30"}`}>
+        <h1 className="text-2xl font-bold text-white">{cancelled ? t("orders.cancelledTitle") : t("orders.placed")}</h1>
         <p className="mt-2 text-slate-400">
-          Order #{order.id} — {statusLabels[order.status]}
+          {t("orders.number", { id: order.id })} — {tKey(`status.${order.status}`, order.status)}
         </p>
       </div>
 
@@ -55,7 +51,7 @@ export default async function OrderConfirmationPage({
             <span className="text-white">
               {item.product.name} × {item.quantity}
             </span>
-            <span className="text-blue-400">
+            <span className="text-blue-400" dir="ltr">
               {item.unitPrice.times(item.quantity).toFixed(2)} {order.currency}
             </span>
           </div>
@@ -63,9 +59,9 @@ export default async function OrderConfirmationPage({
       </div>
 
       <div className="mt-6 flex items-center justify-between rounded-2xl border border-slate-800 bg-[#111827] p-6">
-        <span className="text-slate-300">Total</span>
-        <span className="text-2xl font-bold text-blue-400">
-          {order.total.toString()} $
+        <span className="text-slate-300">{t("orders.total")}</span>
+        <span className="text-2xl font-bold text-blue-400" dir="ltr">
+          {order.total.toFixed(2)} {order.currency}
         </span>
       </div>
     </main>

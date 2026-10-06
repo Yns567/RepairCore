@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { Prisma } from "@/lib/generated/prisma";
 import { PRICING_CURRENCY, toMoney } from "@/lib/money";
+import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import { debitWallet, InsufficientBalanceError } from "@/lib/wallet";
 import { z } from "zod";
@@ -11,20 +12,21 @@ const enrollmentSchema = z.object({ courseId: z.coerce.number().int().positive()
 
 export async function POST(request: Request) {
   const session = await auth();
+  const { t } = await getT();
   const userId = session?.user?.id;
   if (!userId) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: t("err.signIn") }, { status: 401 });
   }
 
   const parsed = enrollmentSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid course." }, { status: 400 });
+    return NextResponse.json({ error: t("err.course") }, { status: 400 });
   }
   const { courseId } = parsed.data;
 
   const course = await prisma.course.findUnique({ where: { id: courseId } });
   if (!course || course.status !== "ACTIVE") {
-    return NextResponse.json({ error: "course not found" }, { status: 404 });
+    return NextResponse.json({ error: t("err.course") }, { status: 404 });
   }
 
   const existing = await prisma.enrollment.findUnique({ where: { userId_courseId: { userId, courseId } } });
@@ -56,11 +58,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ enrollment }, { status: 201 });
   } catch (error) {
     if (error instanceof InsufficientBalanceError) {
-      return NextResponse.json({ error: "Your dirham balance is not enough for this course." }, { status: 402 });
+      return NextResponse.json({ error: t("err.balanceMad") }, { status: 402 });
     }
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return NextResponse.json({ existing: true }, { status: 200 });
     }
-    return NextResponse.json({ error: "We could not enroll you. Please try again." }, { status: 400 });
+    return NextResponse.json({ error: t("err.enrollFailed") }, { status: 400 });
   }
 }

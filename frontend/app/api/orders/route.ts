@@ -4,6 +4,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { getCart } from "@/lib/cart";
 import { type Money, PRICING_CURRENCY, sumLines, toMoney } from "@/lib/money";
+import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import { InsufficientBalanceError, debitWallet } from "@/lib/wallet";
 
@@ -20,20 +21,21 @@ class OrderError extends Error {}
 
 export async function POST(request: Request) {
   const session = await auth();
+  const { t } = await getT();
   const userId = session?.user?.id;
   if (!userId) {
-    return NextResponse.json({ error: "Please sign in before checkout." }, { status: 401 });
+    return NextResponse.json({ error: t("err.signIn") }, { status: 401 });
   }
 
   const payload = await request.json().catch(() => null);
   const parsed = checkoutSchema.safeParse(payload);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Please complete all delivery details." }, { status: 400 });
+    return NextResponse.json({ error: t("err.delivery") }, { status: 400 });
   }
 
   const cart = await getCart();
   if (!cart) {
-    return NextResponse.json({ error: "Your cart is empty." }, { status: 400 });
+    return NextResponse.json({ error: t("err.cartEmpty") }, { status: 400 });
   }
 
   try {
@@ -44,7 +46,7 @@ export async function POST(request: Request) {
       });
 
       if (items.length === 0) {
-        throw new OrderError("Your cart is empty.");
+        throw new OrderError(t("err.cartEmpty"));
       }
 
       const orderItems: { productId: number; quantity: number; unitPrice: Money }[] = [];
@@ -63,7 +65,7 @@ export async function POST(request: Request) {
         });
 
         if (stockUpdate.count !== 1) {
-          throw new OrderError(`${item.product.name} no longer has enough stock.`);
+          throw new OrderError(t("err.stock", { name: item.product.name }));
         }
 
         orderItems.push({
@@ -113,9 +115,11 @@ export async function POST(request: Request) {
     revalidatePath("/hardware");
     return NextResponse.json({ order }, { status: 201 });
   } catch (error) {
-    const message = error instanceof OrderError || error instanceof InsufficientBalanceError
+    const message = error instanceof OrderError
       ? error.message
-      : "We could not place your order. Please try again.";
+      : error instanceof InsufficientBalanceError
+        ? t("err.balance")
+        : t("err.orderFailed");
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }

@@ -22,7 +22,10 @@ export async function getT() {
   const locale = await getLocale();
   const dictionary = dictionaries[locale];
   const t = (key: MessageKey, params?: Params) => interpolate(dictionary[key], params);
+  /** For keys built at runtime (e.g. `status.${status}`); falls back to the raw value. */
+  const tKey = (key: string, fallback: string) => (key in dictionary ? dictionary[key as MessageKey] : fallback);
   const formatDate = (date: Date) =>
     date.toLocaleString(intlLocale(locale), { dateStyle: "medium", timeStyle: "short" });
-  return { t, locale, formatDate };
+  const formatDay = (date: Date) => date.toLocaleDateString(intlLocale(locale), { dateStyle: "medium" });
+  return { t, tKey, locale, formatDate, formatDay };
 }

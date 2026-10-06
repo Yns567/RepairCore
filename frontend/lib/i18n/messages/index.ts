@@ -1,9 +1,12 @@
 import type { Locale } from "../config";
+import { account } from "./account";
+import { auth } from "./auth";
+import { catalog } from "./catalog";
 import { home } from "./home";
 import { layout } from "./layout";
 import { store } from "./store";
 
-const groups = [layout, home, store] as const;
+const groups = [layout, home, store, auth, account, catalog] as const;
 
 type Group = (typeof groups)[number];
 type KeysOf<G> = G extends { en: infer E } ? keyof E : never;

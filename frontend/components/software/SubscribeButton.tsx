@@ -2,10 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useT } from "@/lib/i18n/client";
 
 export default function SubscribeButton({ planId }: { planId: number }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const { t } = useT();
   const router = useRouter();
 
   function handleClick() {
@@ -24,7 +26,7 @@ export default function SubscribeButton({ planId }: { planId: number }) {
 
       const data = await res.json().catch(() => null);
       if (!res.ok) {
-        setError(data?.error ?? "Something went wrong, please try again.");
+        setError(data?.error ?? t("software.failed"));
         return;
       }
 
@@ -39,9 +41,9 @@ export default function SubscribeButton({ planId }: { planId: number }) {
         disabled={isPending}
         className="w-full rounded-lg bg-blue-600 py-2 font-semibold text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-slate-700"
       >
-        {isPending ? "Processing payment..." : "Pay with store balance"}
+        {isPending ? t("software.processing") : t("software.pay")}
       </button>
-      <p className="mt-2 text-xs text-slate-500">Your balance is charged now; activation is completed by our team after review.</p>
+      <p className="mt-2 text-xs text-slate-500">{t("software.note")}</p>
       {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
     </div>
   );

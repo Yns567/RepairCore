@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { CURRENCIES, MONEY_PATTERN, toMoney } from "@/lib/money";
+import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import { detectReceiptType, MAX_PENDING_TOP_UPS, MAX_RECEIPT_BYTES, TOP_UP_BANKS, type TopUpBank } from "@/lib/top-up";
 
@@ -20,9 +21,10 @@ const topUpSchema = z.object({
 });
 
 export async function submitTopUp(_previous: TopUpState, formData: FormData): Promise<TopUpState> {
+  const { t } = await getT();
   const session = await auth();
   const userId = session?.user?.id;
-  if (!userId) return { status: "error", message: "Please sign in again." };
+  if (!userId) return { status: "error", message: t("topup.errAuth") };
 
   const parsed = topUpSchema.safeParse({
     currency: formData.get("currency"),
@@ -31,25 +33,25 @@ export async function submitTopUp(_previous: TopUpState, formData: FormData): Pr
     reference: formData.get("reference") ?? "",
   });
   if (!parsed.success) {
-    return { status: "error", message: "Enter a valid amount (max 2 decimals), currency and bank." };
+    return { status: "error", message: t("topup.errFields") };
   }
 
   const file = formData.get("receipt");
   if (!(file instanceof File) || file.size === 0) {
-    return { status: "error", message: "Attach a photo or PDF of your transfer receipt." };
+    return { status: "error", message: t("topup.errReceipt") };
   }
   if (file.size > MAX_RECEIPT_BYTES) {
-    return { status: "error", message: "The receipt must be 3 MB or smaller." };
+    return { status: "error", message: t("topup.errSize") };
   }
   const receipt = new Uint8Array(await file.arrayBuffer());
   const receiptType = detectReceiptType(receipt);
   if (!receiptType) {
-    return { status: "error", message: "The receipt must be a JPG, PNG, WEBP or PDF file." };
+    return { status: "error", message: t("topup.errType") };
   }
 
   const pending = await prisma.topUpRequest.count({ where: { userId, status: "PENDING" } });
   if (pending >= MAX_PENDING_TOP_UPS) {
-    return { status: "error", message: "You already have requests waiting for review. Please wait for them first." };
+    return { status: "error", message: t("topup.errPending") };
   }
 
   await prisma.topUpRequest.create({
@@ -67,5 +69,5 @@ export async function submitTopUp(_previous: TopUpState, formData: FormData): Pr
 
   revalidatePath("/account/wallet");
   revalidatePath("/admin/top-ups");
-  return { status: "success", message: "Request sent. Your balance is credited after we verify the transfer." };
+  return { status: "success", message: t("topup.sent") };
 }

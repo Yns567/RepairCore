@@ -8,5 +8,10 @@ export default async function Layout({
 }) {
   await requireAdmin();
 
-  return <AdminLayout>{children}</AdminLayout>;
+  // The admin panel is English-only, so keep it left-to-right even when the site is in Arabic.
+  return (
+    <div dir="ltr" lang="en">
+      <AdminLayout>{children}</AdminLayout>
+    </div>
+  );
 }

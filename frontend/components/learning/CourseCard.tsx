@@ -1,11 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-
-const levelLabels: Record<string, string> = {
-  BEGINNER: "Beginner",
-  INTERMEDIATE: "Intermediate",
-  ADVANCED: "Advanced",
-};
+import { getT } from "@/lib/i18n/server";
 
 type CourseCardProps = {
   slug: string;
@@ -17,7 +12,7 @@ type CourseCardProps = {
   lessonCount: number;
 };
 
-export default function CourseCard({
+export default async function CourseCard({
   slug,
   title,
   description,
@@ -26,6 +21,7 @@ export default function CourseCard({
   level,
   lessonCount,
 }: CourseCardProps) {
+  const { t, tKey } = await getT();
   const isFree = Number(price) === 0;
 
   return (
@@ -40,8 +36,8 @@ export default function CourseCard({
           fill
           className="object-cover transition duration-500 group-hover:scale-110"
         />
-        <span className="absolute left-4 top-4 rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white">
-          {levelLabels[level] ?? level}
+        <span className="absolute start-4 top-4 rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white">
+          {tKey(`level.${level}`, level)}
         </span>
       </div>
 
@@ -55,9 +51,9 @@ export default function CourseCard({
         )}
 
         <div className="flex items-center justify-between pt-2">
-          <span className="text-sm text-slate-500">{lessonCount} lessons</span>
+          <span className="text-sm text-slate-500">{t("learning.lessons", { count: lessonCount })}</span>
           <span className="text-lg font-bold text-blue-400">
-            {isFree ? "Free" : `${price} MAD`}
+            {isFree ? t("learning.free") : `${price} MAD`}
           </span>
         </div>
       </div>

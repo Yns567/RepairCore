@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Wrench, ShieldCheck, Truck, Headset } from "lucide-react";
+import { getT } from "@/lib/i18n/server";
 
-export default function Hero() {
+export default async function Hero() {
+  const { t } = await getT();
   return (
     <section className="relative overflow-hidden bg-[#070D18]">
       {/* subtle grid backdrop */}
@@ -23,19 +25,17 @@ export default function Hero() {
         <div>
           <span className="inline-flex items-center gap-2 rounded-full border border-slate-800 bg-[#0F1626] px-3 py-1 text-xs font-medium text-slate-400">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Built for repair technicians
+            {t("hero.badge")}
           </span>
 
           <h1 className="mt-6 text-4xl font-extrabold leading-[1.1] tracking-tight text-white md:text-5xl lg:text-6xl">
-            Everything your
+            {t("hero.title1")}
             <br />
-            repair bench runs on.
+            {t("hero.title2")}
           </h1>
 
           <p className="mt-6 max-w-lg text-base leading-relaxed text-slate-400 md:text-lg">
-            Genuine hardware, licensed unlock &amp; flash software, and
-            hands-on courses — sourced, verified, and shipped for shops that
-            can&apos;t afford downtime.
+            {t("hero.text")}
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -43,13 +43,13 @@ export default function Hero() {
               href="/hardware"
               className="rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-900/30 transition-colors hover:bg-blue-500"
             >
-              Shop Hardware
+              {t("hero.shopHardware")}
             </Link>
             <Link
               href="/software"
               className="rounded-lg border border-slate-700 px-6 py-3 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
             >
-              Explore Software
+              {t("hero.exploreSoftware")}
             </Link>
           </div>
 
@@ -57,19 +57,19 @@ export default function Hero() {
             <div className="flex items-center gap-2">
               <ShieldCheck size={18} className="shrink-0 text-blue-400" />
               <span className="text-xs leading-tight">
-                Verified sellers
+                {t("hero.verified")}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <Truck size={18} className="shrink-0 text-blue-400" />
               <span className="text-xs leading-tight">
-                Fast dispatch
+                {t("hero.dispatch")}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <Headset size={18} className="shrink-0 text-blue-400" />
               <span className="text-xs leading-tight">
-                Technician support
+                {t("hero.support")}
               </span>
             </div>
           </div>
@@ -79,7 +79,7 @@ export default function Hero() {
         <div className="relative mx-auto w-full max-w-md">
           <div className="absolute -inset-4 -z-10 rounded-3xl bg-blue-600/10 blur-2xl" />
 
-          <div className="overflow-hidden rounded-2xl border border-slate-800 bg-[#0B1220] shadow-2xl shadow-black/40">
+          <div dir="ltr" className="overflow-hidden rounded-2xl border border-slate-800 bg-[#0B1220] shadow-2xl shadow-black/40">
             <div className="flex items-center gap-2 border-b border-slate-800 bg-[#0F1626] px-4 py-3">
               <span className="h-2.5 w-2.5 rounded-full bg-rose-500/80" />
               <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />

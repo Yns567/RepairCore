@@ -1,9 +1,11 @@
 import Link from "next/link";
-import { Check, ChevronRight, Heart, ShieldCheck, Star, Truck } from "lucide-react";
+import { Banknote, Check, ChevronRight, Headset, Truck } from "lucide-react";
 import { notFound } from "next/navigation";
 import ProductPurchase from "@/components/cart/ProductPurchase";
 import ProductCard from "@/components/store/ProductCard";
 import ProductGallery from "@/components/store/ProductGallery";
+import { translateCategory } from "@/lib/catalog";
+import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 
 type PageProps = {
@@ -18,35 +20,39 @@ export default async function ProductPage({ params }: PageProps) {
     notFound();
   }
 
-  const relatedProducts = await prisma.product.findMany({
-    where: {
-      status: "ACTIVE",
-      category: product.category,
-      id: { not: product.id },
-    },
-    take: 4,
-    orderBy: { createdAt: "desc" },
-  });
+  const [relatedProducts, { t }] = await Promise.all([
+    prisma.product.findMany({
+      where: {
+        status: "ACTIVE",
+        category: product.category,
+        id: { not: product.id },
+      },
+      take: 4,
+      orderBy: { createdAt: "desc" },
+    }),
+    getT(),
+  ]);
 
   const isAvailable = product.status === "ACTIVE" && product.stock > 0;
   const productImages = [product.image, product.image2, product.image3].filter(
     (image): image is string => Boolean(image),
   );
+  const categoryLabel = product.category ? translateCategory(product.category, t) : null;
   const details = [
-    product.brand && { label: "Brand", value: product.brand },
-    product.category && { label: "Category", value: product.category },
-    product.partNumber && { label: "Part number", value: product.partNumber },
+    product.brand && { label: t("product.brand"), value: product.brand },
+    categoryLabel && { label: t("product.category"), value: categoryLabel },
+    product.partNumber && { label: t("product.partNumber"), value: product.partNumber },
   ].filter((detail): detail is { label: string; value: string } => Boolean(detail));
 
   return (
     <main className="min-h-screen bg-[#f5f7fb] text-slate-900">
       <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 sm:py-10">
-        <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-slate-500">
-          <Link href="/" className="transition hover:text-blue-600">Home</Link>
-          <ChevronRight size={14} />
-          <Link href="/store" className="transition hover:text-blue-600">Store</Link>
-          {product.category && <><ChevronRight size={14} /><span>{product.category}</span></>}
-          <ChevronRight size={14} />
+        <nav aria-label={t("product.breadcrumb")} className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-slate-500">
+          <Link href="/" className="transition hover:text-blue-600">{t("product.home")}</Link>
+          <ChevronRight size={14} className="rtl:rotate-180" />
+          <Link href="/store" className="transition hover:text-blue-600">{t("store.title")}</Link>
+          {categoryLabel && <><ChevronRight size={14} className="rtl:rotate-180" /><span>{categoryLabel}</span></>}
+          <ChevronRight size={14} className="rtl:rotate-180" />
           <span className="max-w-48 truncate text-slate-800">{product.name}</span>
         </nav>
 
@@ -55,29 +61,25 @@ export default async function ProductPage({ params }: PageProps) {
             key={product.id}
             images={productImages}
             productName={product.name}
-            category={product.category}
+            category={categoryLabel}
           />
 
           <div className="flex flex-col py-1">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-              <div className="flex items-center gap-0.5 text-amber-400">
-                {[1, 2, 3, 4, 5].map((star) => <Star key={star} size={15} fill="currentColor" />)}
-              </div>
-              <span className="text-xs text-slate-500">4.9 (128 reviews)</span>
-              <span className={`text-xs font-bold ${isAvailable ? "text-emerald-600" : "text-rose-600"}`}>{isAvailable ? "In Stock" : "Out of Stock"}</span>
-            </div>
+            <span className={`text-xs font-bold ${isAvailable ? "text-emerald-600" : "text-rose-600"}`}>
+              {isAvailable ? t("stock.in") : t("stock.out")}
+            </span>
 
             <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">{product.name}</h1>
-            <p className="mt-4 text-3xl font-extrabold text-blue-600">{product.price.toFixed(2)} MAD</p>
+            <p className="mt-4 text-3xl font-extrabold text-blue-600" dir="ltr">{product.price.toFixed(2)} MAD</p>
 
             <p className="mt-5 text-sm leading-6 text-slate-600">
-              {product.description || "Professional repair equipment selected for technicians who need reliable and precise results."}
+              {product.description || t("product.defaultDescription")}
             </p>
 
             <div className="mt-5 space-y-2.5 text-sm text-slate-600">
-              <Feature text="Professional-grade quality for daily repair work" />
-              <Feature text="Reliable performance and easy setup" />
-              <Feature text="Technical support from repair specialists" />
+              <Feature text={t("product.feature1")} />
+              <Feature text={t("product.feature2")} />
+              <Feature text={t("product.feature3")} />
             </div>
 
             <ProductPurchase productId={product.id} stock={isAvailable ? product.stock : 0} />
@@ -94,24 +96,19 @@ export default async function ProductPage({ params }: PageProps) {
         </section>
 
         <section className="mt-7 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-          <div className="flex flex-wrap gap-x-7 gap-y-3 border-b border-slate-200 pb-4 text-sm font-bold">
-            <span className="border-b-2 border-blue-600 pb-4 text-blue-600">Description</span>
-            <span className="text-slate-500">Additional Information</span>
-            <span className="text-slate-500">Reviews (128)</span>
-            <span className="text-slate-500">Shipping &amp; Returns</span>
-          </div>
+          <h2 className="border-b border-slate-200 pb-4 text-sm font-bold text-blue-600">{t("product.description")}</h2>
           <div className="mt-5 grid gap-5 md:grid-cols-[1fr_auto] md:items-start">
             <div>
-              <p className="text-sm leading-7 text-slate-600">{product.description || "A reliable professional tool for modern mobile and electronics repair workflows. Every product is checked before dispatch to give technicians dependable equipment from the first use."}</p>
+              <p className="text-sm leading-7 text-slate-600">{product.description || t("product.defaultDescription")}</p>
               <div className="mt-4 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
-                <Feature text="Original product guarantee" />
-                <Feature text="Fast, tracked delivery" />
+                <Feature text={t("product.original")} />
+                <Feature text={t("product.delivery")} />
               </div>
             </div>
             <div className="grid gap-2 rounded-xl bg-slate-50 p-4 text-xs text-slate-600 sm:grid-cols-2 md:grid-cols-1">
-              <Info icon={Truck} text="Worldwide shipping available" />
-              <Info icon={ShieldCheck} text="Secure payment options" />
-              <Info icon={Heart} text="Dedicated technical support" />
+              <Info icon={Truck} text={t("product.shipping")} />
+              <Info icon={Banknote} text={t("product.payment")} />
+              <Info icon={Headset} text={t("product.support")} />
             </div>
           </div>
         </section>
@@ -122,14 +119,14 @@ export default async function ProductPage({ params }: PageProps) {
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="mb-7 flex items-center justify-between gap-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[.14em] text-blue-400">You may also like</p>
-                <h2 className="mt-1 text-2xl font-extrabold text-white">Related Products</h2>
+                <p className="text-xs font-bold uppercase tracking-[.14em] text-blue-400">{t("product.alsoLike")}</p>
+                <h2 className="mt-1 text-2xl font-extrabold text-white">{t("product.related")}</h2>
               </div>
-              <Link href="/store" className="text-sm font-bold text-blue-400 transition hover:text-blue-300">View all products →</Link>
+              <Link href="/store" className="text-sm font-bold text-blue-400 transition hover:text-blue-300">{t("product.viewAll")}</Link>
             </div>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {relatedProducts.map((item) => (
-                <ProductCard key={item.id} id={item.id} slug={item.slug} name={item.name} category={item.category ?? "Tools"} price={`${item.price.toFixed(2)} MAD`} stock={item.stock > 0 ? "In Stock" : "Out of Stock"} image={item.image} />
+                <ProductCard key={item.id} id={item.id} slug={item.slug} name={item.name} category={item.category} price={`${item.price.toFixed(2)} MAD`} inStock={item.stock > 0} image={item.image} />
               ))}
             </div>
           </div>

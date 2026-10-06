@@ -2,8 +2,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import AddToCartButton from "@/components/cart/AddToCartButton";
+import { getT } from "@/lib/i18n/server";
 
 export default async function TrendingProducts() {
+  const { t } = await getT();
   const products = await prisma.product.findMany({
     where: { status: "ACTIVE" },
     orderBy: { createdAt: "desc" },
@@ -19,17 +21,17 @@ export default async function TrendingProducts() {
       <div className="mb-10 flex items-end justify-between">
         <div>
           <span className="text-xs font-semibold uppercase tracking-widest text-blue-500">
-            Fresh in stock
+            {t("trending.kicker")}
           </span>
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
-            Trending in the Store
+            {t("trending.title")}
           </h2>
         </div>
         <Link
           href="/store"
           className="hidden text-sm font-medium text-blue-400 hover:text-blue-300 md:block"
         >
-          View all →
+          {t("trending.viewAll")}
         </Link>
       </div>
 
@@ -55,7 +57,7 @@ export default async function TrendingProducts() {
                 {product.name}
               </p>
               <p className="mt-1 text-base font-bold text-blue-400">
-                {product.price.toString()} $
+                {product.price.toFixed(2)} MAD
               </p>
 
               <div className="mt-3">
@@ -74,7 +76,7 @@ export default async function TrendingProducts() {
         href="/store"
         className="mt-8 block text-center text-sm font-medium text-blue-400 hover:text-blue-300 md:hidden"
       >
-        View all products →
+        {t("trending.viewAllProducts")}
       </Link>
     </section>
   );

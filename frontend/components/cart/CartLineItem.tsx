@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState, useTransition } from "react";
 import { updateCartItemQuantity, removeFromCart } from "@/app/cart/actions";
+import { useT } from "@/lib/i18n/client";
 
 type CartLineItemProps = {
   id: number;
@@ -19,6 +20,7 @@ export default function CartLineItem({
   price,
   quantity,
 }: CartLineItemProps) {
+  const { t } = useT();
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState("");
 
@@ -53,7 +55,7 @@ export default function CartLineItem({
 
       <div className="flex-1">
         <p className="font-semibold text-white">{name}</p>
-        <p className="mt-1 text-blue-400">{price} MAD</p>
+        <p className="mt-1 text-blue-400" dir="ltr">{price} MAD</p>
         {message && <p className="mt-1 text-xs text-rose-400">{message}</p>}
       </div>
 
@@ -61,7 +63,7 @@ export default function CartLineItem({
         <button
           onClick={() => changeQuantity(quantity - 1)}
           disabled={quantity <= 1 || isPending}
-          aria-label="Decrease quantity"
+          aria-label={t("cart.decrease")}
           className="h-8 w-8 rounded-lg bg-slate-800 text-white hover:bg-slate-700"
         >
           −
@@ -70,7 +72,7 @@ export default function CartLineItem({
         <button
           onClick={() => changeQuantity(quantity + 1)}
           disabled={isPending}
-          aria-label="Increase quantity"
+          aria-label={t("cart.increase")}
           className="h-8 w-8 rounded-lg bg-slate-800 text-white hover:bg-slate-700"
         >
           +
@@ -80,9 +82,9 @@ export default function CartLineItem({
       <button
         onClick={remove}
         disabled={isPending}
-        className="ml-4 text-sm text-red-400 hover:text-red-300"
+        className="ms-4 text-sm text-red-400 hover:text-red-300"
       >
-        Remove
+        {t("cartPage.remove")}
       </button>
     </div>
   );

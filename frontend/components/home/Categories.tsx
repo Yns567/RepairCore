@@ -1,61 +1,30 @@
 import Link from "next/link";
 import { ShoppingBag, Cpu, Wrench, GraduationCap, ArrowRight, Smartphone, Coins, KeyRound } from "lucide-react";
+import { getT } from "@/lib/i18n/server";
+import type { MessageKey } from "@/lib/i18n/messages";
 
-const categories = [
-  {
-    title: "Store",
-    description: "Genuine phone parts, tools and accessories.",
-    href: "/store",
-    icon: ShoppingBag,
-  },
-  {
-    title: "Software",
-    description: "Unlock, flash and repair software — buy or rent.",
-    href: "/software",
-    icon: Cpu,
-  },
-  {
-    title: "Hardware",
-    description: "Boxes, programmers and board-repair equipment.",
-    href: "/hardware",
-    icon: Wrench,
-  },
-  {
-    title: "Learning",
-    description: "Hands-on tutorials and repair courses.",
-    href: "/learning",
-    icon: GraduationCap,
-  },
-  {
-    title: "IMEI Checks",
-    description: "Device, warranty, blacklist and eligibility checks.",
-    href: "/services?category=IMEI",
-    icon: Smartphone,
-  },
-  {
-    title: "Tool Credits",
-    description: "Credits for supported professional repair tools.",
-    href: "/services?category=SERVER_CREDIT",
-    icon: Coins,
-  },
-  {
-    title: "Tool Rent",
-    description: "Short-term access to professional software tools.",
-    href: "/services?category=TOOL_RENTAL",
-    icon: KeyRound,
-  },
+const categories: { title: MessageKey; description: MessageKey; href: string; icon: typeof ShoppingBag }[] = [
+  { title: "cat.store", description: "cat.storeText", href: "/store", icon: ShoppingBag },
+  { title: "cat.software", description: "cat.softwareText", href: "/software", icon: Cpu },
+  { title: "cat.hardware", description: "cat.hardwareText", href: "/hardware", icon: Wrench },
+  { title: "cat.learning", description: "cat.learningText", href: "/learning", icon: GraduationCap },
+  { title: "cat.imei", description: "cat.imeiText", href: "/services?category=IMEI", icon: Smartphone },
+  { title: "cat.credits", description: "cat.creditsText", href: "/services?category=SERVER_CREDIT", icon: Coins },
+  { title: "cat.rent", description: "cat.rentText", href: "/services?category=TOOL_RENTAL", icon: KeyRound },
 ];
 
-export default function Categories() {
+export default async function Categories() {
+  const { t } = await getT();
+
   return (
     <section className="mx-auto max-w-7xl px-6 py-20">
       <div className="mb-10 flex items-end justify-between">
         <div>
           <span className="text-xs font-semibold uppercase tracking-widest text-blue-500">
-            What we offer
+            {t("cat.kicker")}
           </span>
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
-            Everything you need, in one place
+            {t("cat.title")}
           </h2>
         </div>
       </div>
@@ -73,16 +42,12 @@ export default function Categories() {
                 <Icon size={22} className="text-white" strokeWidth={2.2} />
               </div>
 
-              <h3 className="mt-5 text-lg font-bold text-white">
-                {cat.title}
-              </h3>
+              <h3 className="mt-5 text-lg font-bold text-white">{t(cat.title)}</h3>
 
-              <p className="mt-2 text-sm leading-relaxed text-slate-400">
-                {cat.description}
-              </p>
+              <p className="mt-2 text-sm leading-relaxed text-slate-400">{t(cat.description)}</p>
 
-              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-blue-400 transition-transform group-hover:translate-x-1">
-                Open <ArrowRight size={15} />
+              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-blue-400 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1">
+                {t("cat.open")} <ArrowRight size={15} className="rtl:rotate-180" />
               </span>
             </Link>
           );

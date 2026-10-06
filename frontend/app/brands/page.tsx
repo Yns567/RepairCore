@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, BadgeCheck } from "lucide-react";
+import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function BrandsPage() {
+  const { t } = await getT();
   const products = await prisma.product.findMany({
     where: { status: "ACTIVE", brand: { not: null } },
     select: { brand: true },
@@ -21,9 +23,9 @@ export default async function BrandsPage() {
   return (
     <main className="min-h-[calc(100vh-120px)] bg-[#070d18] px-6 py-16">
       <section className="mx-auto max-w-7xl">
-        <span className="text-xs font-semibold uppercase tracking-widest text-blue-400">Catalog</span>
-        <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-white md:text-5xl">Browse by brand</h1>
-        <p className="mt-4 max-w-2xl text-slate-400">Choose a trusted repair-tool, box or phone-parts brand to view its available products.</p>
+        <span className="text-xs font-semibold uppercase tracking-widest text-blue-400">{t("brands.kicker")}</span>
+        <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-white md:text-5xl">{t("brands.title")}</h1>
+        <p className="mt-4 max-w-2xl text-slate-400">{t("brands.subtitle")}</p>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {brands.map((brand) => (
@@ -35,7 +37,7 @@ export default async function BrandsPage() {
               <span className="inline-flex items-center gap-3 font-semibold text-white">
                 <BadgeCheck size={20} className="text-blue-400" /> {brand}
               </span>
-              <ArrowRight size={18} className="text-slate-500 transition group-hover:translate-x-1 group-hover:text-blue-400" />
+              <ArrowRight size={18} className="text-slate-500 transition group-hover:translate-x-1 group-hover:text-blue-400 rtl:rotate-180 rtl:group-hover:-translate-x-1" />
             </Link>
           ))}
         </div>

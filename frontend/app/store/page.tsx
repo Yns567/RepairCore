@@ -1,10 +1,11 @@
 import type { Prisma } from "@/lib/generated/prisma";
+import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import SearchBar from "@/components/store/SearchBar";
 import ProductCard from "@/components/store/ProductCard";
 import {
-  getCatalogCategoryLabel,
   isCatalogCategory,
+  translateCategory,
 } from "@/lib/catalog";
 
 const sortOrders: Record<string, Prisma.ProductOrderByWithRelationInput> = {
@@ -21,6 +22,7 @@ export default async function StorePage({
   searchParams: Promise<{ search?: string; category?: string; brand?: string; sort?: string }>;
 }) {
   const { search, category, brand, sort } = await searchParams;
+  const { t } = await getT();
   const selectedCategory = isCatalogCategory(category) ? category : undefined;
   const selectedBrand = brand?.trim() || undefined;
 
@@ -41,20 +43,20 @@ export default async function StorePage({
     <main className="mx-auto max-w-7xl px-6 py-20">
       <h1 className="text-4xl font-bold text-white">
         {selectedBrand
-          ? `${selectedBrand} products`
+          ? t("store.brandTitle", { brand: selectedBrand })
           : selectedCategory
-            ? getCatalogCategoryLabel(selectedCategory)
+            ? translateCategory(selectedCategory, t)
             : sort === "new"
-              ? "New Arrivals"
-              : "Store"}
+              ? t("store.newArrivals")
+              : t("store.title")}
       </h1>
 
       <p className="mt-4 text-slate-400">
         {selectedBrand
-          ? `Available repair products from ${selectedBrand}.`
+          ? t("store.brandSubtitle", { brand: selectedBrand })
           : selectedCategory
-          ? `Browse our ${getCatalogCategoryLabel(selectedCategory).toLowerCase()} collection.`
-          : "Repair tools, boxes, programmers, spare parts and accessories."}
+          ? t("store.categorySubtitle", { category: translateCategory(selectedCategory, t) })
+          : t("store.subtitle")}
       </p>
 
       <div className="mt-8">
@@ -62,7 +64,7 @@ export default async function StorePage({
       </div>
 
       {products.length === 0 ? (
-        <p className="mt-16 text-center text-slate-500">No matching products right now.</p>
+        <p className="mt-16 text-center text-slate-500">{t("store.empty")}</p>
       ) : (
       <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
         {products.map((product) => (
@@ -70,9 +72,9 @@ export default async function StorePage({
             key={product.id}
             id={product.id}
             name={product.name}
-            category={product.category ?? "Unknown"}
+            category={product.category}
             price={`${product.price.toFixed(2)} MAD`}
-            stock={product.stock > 0 ? "In Stock" : "Out of Stock"}
+            inStock={product.stock > 0}
             image={product.image}
             slug={product.slug}
           />

@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { getCart } from "@/lib/cart";
+import { getT } from "@/lib/i18n/server";
 import { sumLines } from "@/lib/money";
 import CartLineItem from "@/components/cart/CartLineItem";
 
 export default async function CartPage() {
-  const cart = await getCart();
+  const [cart, { t }] = await Promise.all([getCart(), getT()]);
   const items = cart?.items ?? [];
 
   const total = sumLines(items.map((item) => ({ unitPrice: item.product.price, quantity: item.quantity })));
@@ -12,15 +13,13 @@ export default async function CartPage() {
   if (items.length === 0) {
     return (
       <main className="mx-auto max-w-3xl px-6 py-24 text-center">
-        <h1 className="text-3xl font-bold text-white">Your cart is empty</h1>
-        <p className="mt-4 text-slate-400">
-          You haven&apos;t added any products yet.
-        </p>
+        <h1 className="text-3xl font-bold text-white">{t("cartPage.emptyTitle")}</h1>
+        <p className="mt-4 text-slate-400">{t("cartPage.emptyText")}</p>
         <Link
           href="/store"
           className="mt-8 inline-block rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-500"
         >
-          Browse the Store
+          {t("cartPage.browse")}
         </Link>
       </main>
     );
@@ -28,7 +27,7 @@ export default async function CartPage() {
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-16">
-      <h1 className="text-4xl font-bold text-white">Shopping Cart</h1>
+      <h1 className="text-4xl font-bold text-white">{t("cartPage.title")}</h1>
 
       <div className="mt-10 space-y-4">
         {items.map((item) => (
@@ -37,24 +36,22 @@ export default async function CartPage() {
             id={item.id}
             name={item.product.name}
             image={item.product.image}
-            price={item.product.price.toString()}
+            price={item.product.price.toFixed(2)}
             quantity={item.quantity}
           />
         ))}
       </div>
 
       <div className="mt-10 flex items-center justify-between rounded-2xl border border-slate-800 bg-[#111827] p-6">
-        <span className="text-lg text-slate-300">Total</span>
-        <span className="text-2xl font-bold text-blue-400">
-          {total.toFixed(2)} MAD
-        </span>
+        <span className="text-lg text-slate-300">{t("cartPage.total")}</span>
+        <span className="text-2xl font-bold text-blue-400" dir="ltr">{total.toFixed(2)} MAD</span>
       </div>
 
       <Link
         href="/checkout"
         className="mt-6 block w-full rounded-lg bg-blue-600 py-3 text-center font-semibold text-white hover:bg-blue-500"
       >
-        Checkout
+        {t("cartPage.checkout")}
       </Link>
     </main>
   );

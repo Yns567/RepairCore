@@ -2,9 +2,11 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { useT } from "@/lib/i18n/client";
 
 export default function SearchBar({ path = "/store" }: { path?: string }) {
   const router = useRouter();
+  const { t } = useT();
   const searchParams = useSearchParams();
 
   const [search, setSearch] = useState(
@@ -25,7 +27,7 @@ export default function SearchBar({ path = "/store" }: { path?: string }) {
     <form onSubmit={handleSearch} className="mb-8">
       <input
         type="text"
-        placeholder="Search products..."
+        placeholder={t("store.search")}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="w-full rounded-xl border border-slate-700 bg-[#111827] px-5 py-3 text-white outline-none placeholder:text-slate-500 focus:border-blue-500"

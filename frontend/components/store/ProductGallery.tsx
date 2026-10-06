@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { useT } from "@/lib/i18n/client";
 
 type ProductGalleryProps = {
   images: string[];
@@ -14,6 +15,7 @@ export default function ProductGallery({
   productName,
   category,
 }: ProductGalleryProps) {
+  const { t } = useT();
   const availableImages = images.length > 0 ? images : ["/placeholder.svg"];
   const [selectedIndex, setSelectedIndex] = useState(0);
   const selectedImage =
@@ -54,7 +56,7 @@ export default function ProductGallery({
         <Image
           key={selectedImage}
           src={selectedImage}
-          alt={`${productName} image ${selectedIndex + 1}`}
+          alt={t("product.image", { name: productName, index: selectedIndex + 1 })}
           fill
           priority={selectedIndex === 0}
           sizes="(max-width: 1024px) 100vw, 50vw"

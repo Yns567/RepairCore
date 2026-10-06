@@ -49,6 +49,11 @@ export default async function AdminGsmServicesPage() {
                       <p className="mt-1 text-xs text-gray-500">
                         {service.provider || "RepairCore"} · #{service.id}
                       </p>
+                      {service.externalId && (
+                        <p className="mt-1 text-xs text-blue-700">
+                          Provider #{service.externalId} · cost {service.providerCost?.toFixed(2) ?? "—"} USD
+                        </p>
+                      )}
                     </td>
                     <td className="px-4 py-4 text-gray-700">
                       {category?.shortLabel || service.category}
@@ -101,6 +106,12 @@ export default async function AdminGsmServicesPage() {
                             <option value="INACTIVE">Inactive</option>
                           </select>
                         </label>
+                        {service.externalId && (
+                          <label className="flex items-center gap-1.5 pb-2 text-xs font-medium text-gray-600">
+                            <input name="priceLocked" type="checkbox" defaultChecked={service.priceLocked} />
+                            Lock price
+                          </label>
+                        )}
                         <button
                           type="submit"
                           className="rounded-lg bg-blue-600 px-3.5 py-2 font-semibold text-white hover:bg-blue-700"

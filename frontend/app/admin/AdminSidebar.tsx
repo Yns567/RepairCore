@@ -8,6 +8,7 @@ const links = [
   { href: "/admin/services", label: "GSM Services" },
   { href: "/admin/service-orders", label: "Service Orders" },
   { href: "/admin/subscriptions", label: "Subscriptions" },
+  { href: "/admin/provider", label: "GSM Provider" },
   { href: "/admin/wallets", label: "Balances" },
   { href: "/admin/top-ups", label: "Top-up requests" },
 ];

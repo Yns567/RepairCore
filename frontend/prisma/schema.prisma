@@ -253,6 +253,13 @@ model GsmService {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
+  // Provider (GSM Theme / DHRU API) link. Null for services handled manually.
+  externalId      String?   @unique
+  providerCost    Decimal?
+  customFieldName String? // Name of the provider's custom input field, if any.
+  priceLocked     Boolean   @default(false) // When true, sync keeps the admin's price.
+  syncedAt        DateTime?
+
   orders GsmServiceOrder[]
 
   @@index([category, status])
@@ -273,6 +280,9 @@ model GsmServiceOrder {
   result                   String?
   authorizationConfirmedAt DateTime
   refundedAt               DateTime?
+  externalReference        String? // Provider REFERENCEID once submitted.
+  submitError              String? // Why automatic submission needs an admin.
+  lastCheckedAt            DateTime?
   createdAt                DateTime  @default(now())
   updatedAt                DateTime  @updatedAt
 

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Clock3, RotateCcw, ShieldCheck } from "lucide-react";
 import { auth } from "@/auth";
+import { refreshProviderOrders } from "@/lib/gsm-provider";
 import { prisma } from "@/lib/prisma";
 import { decryptSensitiveValue } from "@/lib/sensitive-data";
 
@@ -34,6 +35,9 @@ export default async function AccountServicesPage() {
   if (!userId) {
     redirect("/login?next=/account/services");
   }
+
+  // Pull fresh results from the provider (throttled per order) before showing them.
+  await refreshProviderOrders({ userId }, 5);
 
   const orders = await prisma.gsmServiceOrder.findMany({
     where: { userId },

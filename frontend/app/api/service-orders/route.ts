@@ -1,10 +1,14 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
+import { isBlockedService, submitOrderToProvider } from "@/lib/gsm-provider";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { MONEY_PATTERN, PRICING_CURRENCY, toMoney } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { encryptSensitiveValue } from "@/lib/sensitive-data";
 import { debitWallet, InsufficientBalanceError } from "@/lib/wallet";
+
+// Leaves time for the provider submission that runs after the response.
+export const maxDuration = 60;
 
 const requestSchema = z.object({
   serviceId: z.coerce.number().int().positive(),
@@ -56,7 +60,7 @@ export async function POST(request: Request) {
   }
 
   const service = await prisma.gsmService.findUnique({ where: { id: parsed.data.serviceId } });
-  if (!service || service.status !== "ACTIVE") {
+  if (!service || service.status !== "ACTIVE" || (service.externalId && isBlockedService(service.name, service.provider))) {
     return NextResponse.json({ error: "This service is not available right now." }, { status: 404 });
   }
 
@@ -114,6 +118,11 @@ export async function POST(request: Request) {
 
       return { order: createdOrder, existing: false };
     });
+
+    if (!order.existing && service.externalId) {
+      // Send to the provider after responding, so the customer is not kept waiting.
+      after(() => submitOrderToProvider(order.order.id));
+    }
 
     return NextResponse.json(
       { id: order.order.id, existing: order.existing },

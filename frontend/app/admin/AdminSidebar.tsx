@@ -7,6 +7,7 @@ const links = [
   { href: "/admin/orders", label: "Orders" },
   { href: "/admin/services", label: "GSM Services" },
   { href: "/admin/service-orders", label: "Service Orders" },
+  { href: "/admin/plans", label: "Software Plans" },
   { href: "/admin/subscriptions", label: "Subscriptions" },
   { href: "/admin/provider", label: "GSM Provider" },
   { href: "/admin/wallets", label: "Balances" },

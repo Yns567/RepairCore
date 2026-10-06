@@ -1,7 +1,10 @@
 import { requireAdmin } from "@/lib/authorization";
-import { getGsmServiceCategory } from "@/lib/gsm-services";
+import { getGsmServiceCategory, gsmServiceCategories } from "@/lib/gsm-services";
 import { prisma } from "@/lib/prisma";
-import { updateGsmService } from "./actions";
+import { createGsmService, updateGsmService } from "./actions";
+
+const labelClass = "grid gap-1 text-xs font-medium text-gray-600";
+const fieldClass = "rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-sm text-gray-900";
 
 const statusStyles: Record<string, string> = {
   ACTIVE: "bg-emerald-100 text-emerald-700",
@@ -21,6 +24,30 @@ export default async function AdminGsmServicesPage() {
       <p className="mt-1 text-sm text-gray-500">
         Manage the customer price, estimated processing time, and availability of each offer.
       </p>
+
+      <details className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <summary className="cursor-pointer font-semibold text-blue-700">+ Add a service (manual delivery)</summary>
+        <form action={createGsmService} className="mt-4 grid gap-3 sm:grid-cols-2">
+          <label className={labelClass}>Name<input name="name" required minLength={3} maxLength={190} className={fieldClass} placeholder="Z3X Pro 1 year activation" /></label>
+          <label className={labelClass}>Brand / tool (optional)<input name="provider" maxLength={120} className={fieldClass} placeholder="Z3X" /></label>
+          <label className={labelClass}>Category
+            <select name="category" className={fieldClass} defaultValue="SERVER_CREDIT">
+              {gsmServiceCategories.map((category) => <option key={category.value} value={category.value}>{category.label}</option>)}
+            </select>
+          </label>
+          <label className={labelClass}>Customer must enter
+            <select name="inputType" className={fieldClass} defaultValue="USERNAME">
+              <option value="USERNAME">Tool account username / email</option>
+              <option value="IMEI">IMEI</option>
+              <option value="NONE">Nothing</option>
+            </select>
+          </label>
+          <label className={labelClass}>Price (USD)<input name="price" required inputMode="decimal" pattern="\d{1,8}(\.\d{1,2})?" className={fieldClass} placeholder="25.00" /></label>
+          <label className={labelClass}>Processing time<input name="estimatedTime" required minLength={2} maxLength={80} className={fieldClass} placeholder="1-6 hours" /></label>
+          <label className={`${labelClass} sm:col-span-2`}>Description (optional)<textarea name="description" maxLength={2000} rows={3} className={fieldClass} /></label>
+          <div className="sm:col-span-2"><button className="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700">Add service</button></div>
+        </form>
+      </details>
 
       {services.length === 0 ? (
         <p className="mt-8 rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500">

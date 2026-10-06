@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/authorization";
 import { isBlockedService } from "@/lib/gsm-provider";
+import { MONEY_PATTERN, toMoney } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 
 const updateServiceSchema = z.object({
@@ -13,6 +14,38 @@ const updateServiceSchema = z.object({
   status: z.enum(["ACTIVE", "INACTIVE"]),
   priceLocked: z.boolean(),
 });
+
+const createServiceSchema = z.object({
+  name: z.string().trim().min(3).max(190),
+  category: z.enum(["IMEI", "SERVER_CREDIT", "TOOL_RENTAL"]),
+  inputType: z.enum(["IMEI", "USERNAME", "NONE"]),
+  price: z.string().trim().regex(MONEY_PATTERN),
+  estimatedTime: z.string().trim().min(2).max(80),
+  provider: z.string().trim().max(120).transform((value) => value || null),
+  description: z.string().trim().max(2000).transform((value) => value || null),
+});
+
+export async function createGsmService(formData: FormData) {
+  await requireAdmin();
+  const parsed = createServiceSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    throw new Error("Enter a name, category, input type, price and processing time.");
+  }
+  if (toMoney(parsed.data.price).lte(0)) throw new Error("The price must be greater than zero.");
+
+  const base = parsed.data.name.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 70) || "service";
+  let slug = base;
+  for (let suffix = 2; await prisma.gsmService.findUnique({ where: { slug }, select: { id: true } }); suffix += 1) {
+    slug = `${base}-${suffix}`;
+  }
+
+  await prisma.gsmService.create({
+    data: { ...parsed.data, price: toMoney(parsed.data.price), slug, status: "ACTIVE" },
+  });
+
+  revalidatePath("/admin/services");
+  revalidatePath("/services");
+}
 
 export async function updateGsmService(formData: FormData) {
   await requireAdmin();

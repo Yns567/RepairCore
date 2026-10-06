@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import LegalNotice from "@/components/legal/LegalNotice";
 import { useT } from "@/lib/i18n/client";
 
 type ServiceOrderFormProps = {
@@ -87,6 +88,7 @@ export default function ServiceOrderForm({ serviceId, slug, inputType, price }: 
         <input type="checkbox" checked={authorizationConfirmed} onChange={(event) => setAuthorizationConfirmed(event.target.checked)} required className="mt-1" />
         {t("form.authorization")}
       </label>
+      <LegalNotice />
       {error && <p className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
       <button type="submit" disabled={loading || !authorizationConfirmed} className="w-full rounded-lg bg-blue-600 py-3.5 font-semibold text-white hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-slate-700">{loading ? t("form.processing") : t("form.pay", { price })}</button>
     </form>

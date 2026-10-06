@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Mail, MessageCircleMore, Phone, Wrench } from "lucide-react";
+import { Mail, MessageCircle, MessageCircleMore, Phone, Wrench } from "lucide-react";
 import { getT } from "@/lib/i18n/server";
+import { SITE, whatsappLink } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Contact us",
@@ -22,25 +23,36 @@ export default async function ContactPage() {
           {t("contact.subtitle")}
         </p>
 
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
+        <div className="mt-10 grid gap-6 md:grid-cols-3">
           <a
-            href="tel:0638116689"
+            href={`tel:${SITE.phone}`}
             className="group rounded-2xl border border-slate-800 bg-[#0b1220] p-7 transition hover:-translate-y-1 hover:border-blue-500"
           >
             <span className="grid h-12 w-12 place-items-center rounded-xl bg-blue-600 text-white"><Phone size={22} /></span>
             <h2 className="mt-5 text-xl font-bold text-white">{t("contact.phone")}</h2>
             <p className="mt-2 text-sm text-slate-400">{t("contact.phoneText")}</p>
-            <p className="mt-5 text-lg font-semibold text-blue-400" dir="ltr">0638116689</p>
+            <p className="mt-5 text-lg font-semibold text-blue-400" dir="ltr">{SITE.phone}</p>
           </a>
 
           <a
-            href="mailto:Achrafgamer50006@gmail.com"
+            href={`mailto:${SITE.supportEmail}`}
             className="group rounded-2xl border border-slate-800 bg-[#0b1220] p-7 transition hover:-translate-y-1 hover:border-blue-500"
           >
             <span className="grid h-12 w-12 place-items-center rounded-xl bg-blue-600 text-white"><Mail size={22} /></span>
             <h2 className="mt-5 text-xl font-bold text-white">{t("contact.email")}</h2>
             <p className="mt-2 text-sm text-slate-400">{t("contact.emailText")}</p>
-            <p className="mt-5 break-all text-lg font-semibold text-blue-400">Achrafgamer50006@gmail.com</p>
+            <p className="mt-5 break-all text-lg font-semibold text-blue-400">{SITE.supportEmail}</p>
+          </a>
+          <a
+            href={whatsappLink()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group rounded-2xl border border-emerald-700/50 bg-[#0b1220] p-7 transition hover:-translate-y-1 hover:border-emerald-500"
+          >
+            <span className="grid h-12 w-12 place-items-center rounded-xl bg-emerald-600 text-white"><MessageCircle size={22} /></span>
+            <h2 className="mt-5 text-xl font-bold text-white">{t("contact.whatsapp")}</h2>
+            <p className="mt-2 text-sm text-slate-400">{t("contact.whatsappText")}</p>
+            <p className="mt-5 text-lg font-semibold text-emerald-400" dir="ltr">{SITE.phone}</p>
           </a>
         </div>
 

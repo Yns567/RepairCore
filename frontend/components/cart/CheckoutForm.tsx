@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import LegalNotice from "@/components/legal/LegalNotice";
 import { useT } from "@/lib/i18n/client";
 
 export default function CheckoutForm({
@@ -108,6 +109,7 @@ export default function CheckoutForm({
         className="w-full rounded-lg border border-slate-800 bg-[#111827] px-4 py-3 text-white placeholder:text-slate-500"
       />
 
+      <LegalNotice />
       {error && <p className="text-sm text-red-400">{error}</p>}
 
       <button

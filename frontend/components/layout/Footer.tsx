@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Mail, Phone, Wrench } from "lucide-react";
+import { Mail, MessageCircle, Phone, Wrench } from "lucide-react";
 import { getT } from "@/lib/i18n/server";
+import { SITE, whatsappLink } from "@/lib/site";
 
 export default async function Footer() {
   const { t } = await getT();
@@ -42,17 +43,25 @@ export default async function Footer() {
         <div>
           <h2 className="text-sm font-bold uppercase tracking-wider text-white">{t("nav.contact")}</h2>
           <div className="mt-4 grid gap-3 text-sm">
-            <a href="tel:0638116689" className="inline-flex items-center gap-2 hover:text-blue-400" dir="ltr">
-              <Phone size={16} className="text-blue-400" /> 0638116689
+            <a href={`tel:${SITE.phone}`} className="inline-flex items-center gap-2 hover:text-blue-400" dir="ltr">
+              <Phone size={16} className="text-blue-400" /> {SITE.phone}
             </a>
-            <a href="mailto:Achrafgamer50006@gmail.com" className="inline-flex items-center gap-2 break-all hover:text-blue-400">
-              <Mail size={16} className="shrink-0 text-blue-400" /> Achrafgamer50006@gmail.com
+            <a href={whatsappLink()} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:text-blue-400">
+              <MessageCircle size={16} className="text-emerald-400" /> {t("contact.whatsapp")}
+            </a>
+            <a href={`mailto:${SITE.supportEmail}`} className="inline-flex items-center gap-2 break-all hover:text-blue-400">
+              <Mail size={16} className="shrink-0 text-blue-400" /> {SITE.supportEmail}
             </a>
             <Link href="/contact" className="mt-1 font-medium text-blue-400 hover:text-blue-300">{t("footer.contactPage")}</Link>
           </div>
         </div>
       </div>
       <div className="border-t border-slate-800 px-6 py-4 text-center text-xs text-slate-500">
+        <nav aria-label={t("footer.legal")} className="mb-2 flex flex-wrap justify-center gap-x-5 gap-y-1">
+          <Link href="/terms" className="hover:text-slate-300">{t("legal.terms")}</Link>
+          <Link href="/refunds" className="hover:text-slate-300">{t("legal.refunds")}</Link>
+          <Link href="/privacy" className="hover:text-slate-300">{t("legal.privacy")}</Link>
+        </nav>
         {t("footer.rights", { year: new Date().getFullYear() })}
       </div>
     </footer>

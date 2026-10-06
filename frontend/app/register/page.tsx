@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import LegalNotice from "@/components/legal/LegalNotice";
 import { useT } from "@/lib/i18n/client";
 
 const inputClass = "w-full rounded-lg border border-slate-800 bg-[#111827] px-4 py-3 text-white placeholder:text-slate-500";
@@ -49,6 +50,7 @@ export default function RegisterPage() {
         <input type="email" placeholder={t("auth.email")} value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" className={inputClass} />
         <input type="password" placeholder={t("auth.newPassword")} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} autoComplete="new-password" className={inputClass} />
 
+        <LegalNotice />
         {error && <p className="text-sm text-red-400">{error}</p>}
 
         <button

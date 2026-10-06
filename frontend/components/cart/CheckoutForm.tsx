@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 
 export default function CheckoutForm({
   defaultName,
-  total,
   walletBalance,
+  canPayWithBalance,
   currency,
 }: {
   defaultName: string;
-  total: number;
-  walletBalance: number;
+  walletBalance: string;
+  canPayWithBalance: boolean;
   currency: string;
 }) {
   const router = useRouter();
@@ -23,7 +23,6 @@ export default function CheckoutForm({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"COD" | "BALANCE">("COD");
-  const canPayWithBalance = walletBalance >= total;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -94,7 +93,7 @@ export default function CheckoutForm({
         </label>
         <label className={`mt-3 flex items-center gap-3 text-sm ${canPayWithBalance ? "cursor-pointer text-slate-200" : "cursor-not-allowed text-slate-500"}`}>
           <input type="radio" name="paymentMethod" value="BALANCE" checked={paymentMethod === "BALANCE"} onChange={() => setPaymentMethod("BALANCE")} disabled={!canPayWithBalance} />
-          Pay with store balance ({walletBalance.toFixed(2)} {currency})
+          Pay with store balance ({walletBalance} {currency})
         </label>
         {!canPayWithBalance && <p className="mt-3 text-xs text-amber-400">Your balance is lower than this order total. Contact us to add credit.</p>}
       </fieldset>

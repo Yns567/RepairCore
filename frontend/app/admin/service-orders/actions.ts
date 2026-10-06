@@ -63,7 +63,7 @@ export async function updateGsmServiceOrder(formData: FormData) {
       if (refundClaim.count === 1) {
         await creditWallet(tx, {
           userId: order.userId,
-          amount: Number(order.price),
+          amount: order.price,
           type: "REFUND",
           description: `Refund for GSM service order #${order.id}: ${order.service.name}`,
           referenceType: "GSM_SERVICE_ORDER",

@@ -3,12 +3,16 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/authorization";
+import { MONEY_PATTERN, toMoney } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { creditWallet } from "@/lib/wallet";
 
 const adjustmentSchema = z.object({
   userId: z.string().cuid(),
-  amount: z.coerce.number().positive().max(10_000),
+  amount: z.string().trim().regex(MONEY_PATTERN).refine((value) => {
+    const amount = toMoney(value);
+    return amount.gt(0) && amount.lte(10_000);
+  }),
   type: z.enum(["CREDIT", "REFUND", "ADJUSTMENT"]),
   description: z.string().trim().min(3).max(200),
 });

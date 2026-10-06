@@ -23,7 +23,7 @@ const categories = [
   {
     title: "Learning",
     description: "Hands-on tutorials and repair courses.",
-    href: "/lerning",
+    href: "/learning",
     icon: GraduationCap,
   },
   {

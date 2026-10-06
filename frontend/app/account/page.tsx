@@ -35,7 +35,7 @@ export default async function AccountPage() {
         <AccountStat label="Orders" value={orderCount} detail="View purchase history" href="/orders" />
         <AccountStat label="Software plans" value={subscriptionCount} detail={`${activeSubscriptionCount} currently active`} href="/account/subscriptions" />
         <AccountStat label="GSM services" value={serviceOrderCount} detail="Track service requests" href="/account/services" />
-        <AccountStat label="Learning" value="Courses" detail="Continue learning and enroll" href="/lerning" />
+        <AccountStat label="Learning" value="Courses" detail="Continue learning and enroll" href="/learning" />
         <AccountStat label="Store balance" value={`${wallet.balance.toString()} ${wallet.currency}`} detail="View balance history" href="/account/wallet" />
       </div>
 

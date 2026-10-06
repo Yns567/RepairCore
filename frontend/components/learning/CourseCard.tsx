@@ -30,7 +30,7 @@ export default function CourseCard({
 
   return (
     <Link
-      href={`/lerning/${slug}`}
+      href={`/learning/${slug}`}
       className="group block overflow-hidden rounded-2xl border border-slate-800 bg-[#111827] shadow-lg transition-all duration-300 hover:-translate-y-2 hover:border-blue-500 hover:shadow-2xl"
     >
       <div className="relative h-48 bg-[#0F172A]">

@@ -16,8 +16,17 @@ export default function OrderStatusSelect({
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const status = e.target.value;
+    if (status === "CANCELLED" && !confirm("Cancel this order? Stock is restored and balance payments are refunded. This cannot be undone.")) {
+      e.target.value = currentStatus;
+      return;
+    }
     startTransition(async () => {
-      await updateOrderStatus(orderId, status);
+      try {
+        await updateOrderStatus(orderId, status);
+      } catch (error) {
+        e.target.value = currentStatus;
+        alert(error instanceof Error ? error.message : "Could not update the order.");
+      }
     });
   }
 

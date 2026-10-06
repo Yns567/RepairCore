@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
+import { MONEY_PATTERN, toMoney } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { encryptSensitiveValue } from "@/lib/sensitive-data";
 import { debitWallet, InsufficientBalanceError } from "@/lib/wallet";
@@ -8,7 +9,7 @@ import { debitWallet, InsufficientBalanceError } from "@/lib/wallet";
 const requestSchema = z.object({
   serviceId: z.coerce.number().int().positive(),
   requestId: z.string().uuid(),
-  expectedPrice: z.coerce.number().positive().finite(),
+  expectedPrice: z.union([z.string(), z.number()]).transform(String).pipe(z.string().regex(MONEY_PATTERN)),
   imei: z.string().trim().max(20).optional().default(""),
   accountUsername: z.string().trim().max(120).optional().default(""),
   deviceModel: z.string().trim().max(100).optional().default(""),
@@ -59,8 +60,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "This service is not available right now." }, { status: 404 });
   }
 
-  const currentPrice = Number(service.price);
-  if (Math.abs(currentPrice - parsed.data.expectedPrice) > 0.0001) {
+  const currentPrice = toMoney(service.price);
+  if (!currentPrice.equals(toMoney(parsed.data.expectedPrice))) {
     return NextResponse.json(
       { error: "The service price changed. Refresh the page and review the new price." },
       { status: 409 },

@@ -1,15 +1,13 @@
 import Link from "next/link";
 import { getCart } from "@/lib/cart";
+import { sumLines } from "@/lib/money";
 import CartLineItem from "@/components/cart/CartLineItem";
 
 export default async function CartPage() {
   const cart = await getCart();
   const items = cart?.items ?? [];
 
-  const total = items.reduce(
-    (sum, item) => sum + Number(item.product.price) * item.quantity,
-    0,
-  );
+  const total = sumLines(items.map((item) => ({ unitPrice: item.product.price, quantity: item.quantity })));
 
   if (items.length === 0) {
     return (

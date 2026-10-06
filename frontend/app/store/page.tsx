@@ -1,3 +1,4 @@
+import type { Prisma } from "@/lib/generated/prisma";
 import { prisma } from "@/lib/prisma";
 import SearchBar from "@/components/store/SearchBar";
 import ProductCard from "@/components/store/ProductCard";
@@ -5,6 +6,14 @@ import {
   getCatalogCategoryLabel,
   isCatalogCategory,
 } from "@/lib/catalog";
+
+const sortOrders: Record<string, Prisma.ProductOrderByWithRelationInput> = {
+  new: { createdAt: "desc" },
+  old: { createdAt: "asc" },
+  "price-low": { price: "asc" },
+  "price-high": { price: "desc" },
+  name: { name: "asc" },
+};
 
 export default async function StorePage({
   searchParams,
@@ -25,9 +34,7 @@ export default async function StorePage({
       ...(selectedCategory ? { category: selectedCategory } : {}),
       ...(selectedBrand ? { brand: selectedBrand } : {}),
     },
-    orderBy: {
-      createdAt: sort === "new" ? "desc" : "desc",
-    },
+    orderBy: sortOrders[sort ?? ""] ?? sortOrders.new,
   });
 
   return (

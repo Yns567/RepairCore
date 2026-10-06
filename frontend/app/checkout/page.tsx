@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { getCart } from "@/lib/cart";
 import CheckoutForm from "@/components/cart/CheckoutForm";
+import { sumLines } from "@/lib/money";
 import { getWallet } from "@/lib/wallet";
 
 export default async function CheckoutPage() {
@@ -18,10 +19,7 @@ export default async function CheckoutPage() {
     redirect("/cart");
   }
 
-  const total = items.reduce(
-    (sum, item) => sum + Number(item.product.price) * item.quantity,
-    0,
-  );
+  const total = sumLines(items.map((item) => ({ unitPrice: item.product.price, quantity: item.quantity })));
   const wallet = await getWallet(session.user.id);
 
   return (
@@ -40,8 +38,8 @@ export default async function CheckoutPage() {
       <div className="mt-8">
         <CheckoutForm
           defaultName={session.user.name ?? ""}
-          total={total}
-          walletBalance={Number(wallet.balance)}
+          walletBalance={wallet.balance.toFixed(2)}
+          canPayWithBalance={wallet.balance.gte(total)}
           currency={wallet.currency}
         />
       </div>

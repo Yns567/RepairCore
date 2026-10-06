@@ -47,7 +47,7 @@ export async function POST(request: Request) {
 
       await debitWallet(tx, {
         userId,
-        amount: Number(plan.price),
+        amount: plan.price,
         description: `Payment for ${plan.name}`,
         referenceType: "SUBSCRIPTION",
         referenceId: String(subscription.id),

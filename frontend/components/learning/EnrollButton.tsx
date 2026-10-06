@@ -44,7 +44,7 @@ export default function EnrollButton({
       });
 
       if (res.status === 401) {
-        router.push(`/login?next=/lerning`);
+        router.push(`/login?next=/learning`);
         return;
       }
 

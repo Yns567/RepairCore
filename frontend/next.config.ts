@@ -18,6 +18,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      { source: "/lerning", destination: "/learning", permanent: true },
+      { source: "/lerning/:slug*", destination: "/learning/:slug*", permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

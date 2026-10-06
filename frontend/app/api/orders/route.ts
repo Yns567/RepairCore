@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { getCart } from "@/lib/cart";
+import { type Money, sumLines, toMoney } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { InsufficientBalanceError, debitWallet } from "@/lib/wallet";
 
@@ -46,8 +47,7 @@ export async function POST(request: Request) {
         throw new OrderError("Your cart is empty.");
       }
 
-      const orderItems: { productId: number; quantity: number; unitPrice: string }[] = [];
-      let total = 0;
+      const orderItems: { productId: number; quantity: number; unitPrice: Money }[] = [];
 
       for (const item of items) {
         const stockUpdate = await tx.product.updateMany({
@@ -66,14 +66,14 @@ export async function POST(request: Request) {
           throw new OrderError(`${item.product.name} no longer has enough stock.`);
         }
 
-        const unitPrice = Number(item.product.price);
-        total += unitPrice * item.quantity;
         orderItems.push({
           productId: item.productId,
           quantity: item.quantity,
-          unitPrice: item.product.price.toString(),
+          unitPrice: toMoney(item.product.price),
         });
       }
+
+      const total = sumLines(orderItems);
 
       const created = await tx.order.create({
         data: {

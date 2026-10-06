@@ -137,6 +137,14 @@ model Session {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+// Failed sign-in counter per email, used to slow down password guessing.
+model LoginThrottle {
+  key         String   @id // normalized email
+  failures    Int      @default(0)
+  windowStart DateTime @default(now())
+  lockedUntil DateTime?
+}
+
 model VerificationToken {
   identifier String
   token      String   @unique

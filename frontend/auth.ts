@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import { clearLoginFailures, isLoginLocked, recordLoginFailure } from "@/lib/login-throttle";
 import { prisma } from "@/lib/prisma";
 import authConfig from "./auth.config";
 
@@ -26,13 +27,16 @@ export const {
         const password = credentials?.password as string | undefined;
 
         if (!email || !password) return null;
+        if (await isLoginLocked(email)) return null;
 
         const user = await prisma.user.findUnique({ where: { email } });
 
-        if (!user || !user.hashedPassword) return null;
-
-        const isValid = await bcrypt.compare(password, user.hashedPassword);
-        if (!isValid) return null;
+        const isValid = Boolean(user?.hashedPassword) && await bcrypt.compare(password, user!.hashedPassword!);
+        if (!user || !isValid) {
+          await recordLoginFailure(email);
+          return null;
+        }
+        await clearLoginFailures(email);
 
         return {
           id: user.id,

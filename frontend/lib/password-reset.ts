@@ -66,6 +66,7 @@ export async function resetPassword(rawEmail: string, token: string, newPassword
 
     const updated = await tx.user.updateMany({ where: { email }, data: { hashedPassword } });
     await tx.verificationToken.deleteMany({ where: { identifier } });
+    await tx.loginThrottle.deleteMany({ where: { key: email } });
     return updated.count === 1;
   });
 }

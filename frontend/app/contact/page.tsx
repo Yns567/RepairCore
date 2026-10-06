@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default async function ContactPage() {
   const { t } = await getT();
   return (
-    <main className="min-h-[calc(100vh-120px)] bg-[#070d18] px-6 py-16">
+    <main className="min-h-[calc(100vh-120px)] bg-[#070d18] px-4 sm:px-6 py-6 md:py-12">
       <section className="mx-auto max-w-5xl">
         <span className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-300">
           <Wrench size={14} /> {t("contact.badge")}

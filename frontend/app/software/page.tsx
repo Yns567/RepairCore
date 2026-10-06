@@ -10,8 +10,8 @@ export default async function SoftwarePage() {
   });
 
   return (
-    <main className="mx-auto max-w-7xl px-6 py-20">
-      <h1 className="text-4xl font-bold text-white">
+    <main className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-6 md:py-12">
+      <h1 className="text-2xl font-bold md:text-4xl text-white">
         {t("software.title")}
       </h1>
 

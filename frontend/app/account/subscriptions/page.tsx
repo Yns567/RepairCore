@@ -20,8 +20,8 @@ export default async function MySubscriptionsPage() {
   ]);
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-16">
-      <h1 className="text-3xl font-bold text-white">{t("subs.title")}</h1>
+    <main className="mx-auto w-full max-w-4xl px-4 sm:px-6 py-6 md:py-12">
+      <h1 className="text-2xl font-bold md:text-3xl text-white">{t("subs.title")}</h1>
 
       {subscriptions.length === 0 ? (
         <p className="mt-8 text-slate-400">{t("subs.empty")}</p>

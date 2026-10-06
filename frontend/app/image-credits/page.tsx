@@ -53,7 +53,7 @@ const imageCredits = [
 
 export default function ImageCreditsPage() {
   return (
-    <main className="min-h-screen bg-[#070d18] px-6 py-16 text-slate-300">
+    <main className="min-h-screen bg-[#070d18] px-4 sm:px-6 py-6 md:py-12 text-slate-300">
       <div className="mx-auto max-w-4xl">
         <Link href="/store" className="text-sm font-semibold text-blue-400 hover:text-blue-300">
           ← Back to store

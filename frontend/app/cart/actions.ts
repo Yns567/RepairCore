@@ -19,7 +19,6 @@ function refreshCart() {
   revalidatePath("/", "layout");
   revalidatePath("/cart");
   revalidatePath("/store");
-  revalidatePath("/hardware");
 }
 
 export async function addToCart(

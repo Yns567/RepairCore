@@ -8,20 +8,20 @@ export default async function Footer() {
 
   return (
     <footer className="mt-auto border-t border-slate-800 bg-[#070d18] text-slate-300">
-      <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_1.15fr]">
-        <div>
+      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-6 gap-y-8 px-4 py-8 sm:px-6 md:py-12 lg:grid-cols-[1.3fr_1fr_1fr_1.15fr]">
+        <div className="col-span-2 lg:col-span-1">
           <Link href="/" className="inline-flex items-center gap-2 text-white">
             <span className="grid h-9 w-9 place-items-center rounded-lg bg-blue-600">
               <Wrench size={19} />
             </span>
             <span className="font-extrabold tracking-tight">REPAIRCORE</span>
           </Link>
-          <p className="mt-4 max-w-sm text-sm leading-6 text-slate-400">{t("footer.about")}</p>
+          <p className="mt-3 max-w-sm text-sm leading-6 text-slate-400">{t("footer.about")}</p>
         </div>
 
         <div>
           <h2 className="text-sm font-bold uppercase tracking-wider text-white">{t("footer.shop")}</h2>
-          <div className="mt-4 grid gap-2 text-sm">
+          <div className="mt-3 grid gap-2 text-sm">
             <Link href="/store?category=programmers" className="hover:text-blue-400">{t("nav.programmers")}</Link>
             <Link href="/store?category=boxes" className="hover:text-blue-400">{t("nav.boxesDongles")}</Link>
             <Link href="/store?category=tools" className="hover:text-blue-400">{t("nav.repairTools")}</Link>
@@ -31,7 +31,7 @@ export default async function Footer() {
 
         <div>
           <h2 className="text-sm font-bold uppercase tracking-wider text-white">{t("nav.gsmServices")}</h2>
-          <div className="mt-4 grid gap-2 text-sm">
+          <div className="mt-3 grid gap-2 text-sm">
             <Link href="/services?category=IMEI" className="hover:text-blue-400">{t("footer.imeiChecks")}</Link>
             <Link href="/services?category=SERVER_CREDIT" className="hover:text-blue-400">{t("nav.toolCredits")}</Link>
             <Link href="/services?category=TOOL_RENTAL" className="hover:text-blue-400">{t("footer.toolRental")}</Link>
@@ -40,9 +40,9 @@ export default async function Footer() {
           </div>
         </div>
 
-        <div>
+        <div className="col-span-2 lg:col-span-1">
           <h2 className="text-sm font-bold uppercase tracking-wider text-white">{t("nav.contact")}</h2>
-          <div className="mt-4 grid gap-3 text-sm">
+          <div className="mt-3 grid gap-2.5 text-sm">
             <a href={`tel:${SITE.phone}`} className="inline-flex items-center gap-2 hover:text-blue-400" dir="ltr">
               <Phone size={16} className="text-blue-400" /> {SITE.phone}
             </a>

@@ -33,6 +33,7 @@ const nextConfig: NextConfig = {
     return [
       { source: "/lerning", destination: "/learning", permanent: true },
       { source: "/lerning/:slug*", destination: "/learning/:slug*", permanent: true },
+      { source: "/hardware", destination: "/store", permanent: true },
     ];
   },
   async headers() {

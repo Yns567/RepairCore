@@ -42,8 +42,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="mx-auto max-w-md px-6 py-24">
-      <h1 className="text-3xl font-bold text-white">{t("auth.registerTitle")}</h1>
+    <main className="mx-auto w-full max-w-md px-4 sm:px-6 py-8 md:py-16">
+      <h1 className="text-2xl font-bold md:text-3xl text-white">{t("auth.registerTitle")}</h1>
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-4">
         <input type="text" placeholder={t("auth.fullName")} value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" className={inputClass} />

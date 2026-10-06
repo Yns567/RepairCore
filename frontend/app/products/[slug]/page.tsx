@@ -45,18 +45,21 @@ export default async function ProductPage({ params }: PageProps) {
   ].filter((detail): detail is { label: string; value: string } => Boolean(detail));
 
   return (
-    <main className="min-h-screen bg-[#f5f7fb] text-slate-900">
-      <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 sm:py-10">
+    <main className="min-h-screen bg-[#070d18] text-slate-200">
+      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-8">
         <nav aria-label={t("product.breadcrumb")} className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-slate-500">
-          <Link href="/" className="transition hover:text-blue-600">{t("product.home")}</Link>
+          <Link href="/" className="transition hover:text-blue-400">{t("product.home")}</Link>
           <ChevronRight size={14} className="rtl:rotate-180" />
-          <Link href="/store" className="transition hover:text-blue-600">{t("store.title")}</Link>
-          {categoryLabel && <><ChevronRight size={14} className="rtl:rotate-180" /><span>{categoryLabel}</span></>}
-          <ChevronRight size={14} className="rtl:rotate-180" />
-          <span className="max-w-48 truncate text-slate-800">{product.name}</span>
+          <Link href="/store" className="transition hover:text-blue-400">{t("store.title")}</Link>
+          {categoryLabel && product.category && (
+            <>
+              <ChevronRight size={14} className="rtl:rotate-180" />
+              <Link href={`/store?category=${encodeURIComponent(product.category)}`} className="transition hover:text-blue-400">{categoryLabel}</Link>
+            </>
+          )}
         </nav>
 
-        <section className="mt-6 grid gap-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-7 lg:grid-cols-[1.08fr_.92fr] lg:gap-12">
+        <section className="mt-4 grid gap-6 lg:grid-cols-2 lg:gap-10">
           <ProductGallery
             key={product.id}
             images={productImages}
@@ -64,67 +67,61 @@ export default async function ProductPage({ params }: PageProps) {
             category={categoryLabel}
           />
 
-          <div className="flex flex-col py-1">
-            <span className={`text-xs font-bold ${isAvailable ? "text-emerald-600" : "text-rose-600"}`}>
-              {isAvailable ? t("stock.in") : t("stock.out")}
-            </span>
+          <div className="flex flex-col">
+            <h1 dir="auto" className="text-flow text-2xl font-extrabold leading-tight tracking-tight text-white sm:text-3xl">{product.name}</h1>
 
-            <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">{product.name}</h1>
-            <p className="mt-4 text-3xl font-extrabold text-blue-600" dir="ltr">{product.price.toFixed(2)} MAD</p>
-
-            <p className="mt-5 text-sm leading-6 text-slate-600">
-              {product.description || t("product.defaultDescription")}
-            </p>
-
-            <div className="mt-5 space-y-2.5 text-sm text-slate-600">
-              <Feature text={t("product.feature1")} />
-              <Feature text={t("product.feature2")} />
-              <Feature text={t("product.feature3")} />
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <p className="text-3xl font-extrabold text-blue-400" dir="ltr">{product.price.toFixed(2)} MAD</p>
+              <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${isAvailable ? "bg-emerald-500/15 text-emerald-300" : "bg-rose-500/15 text-rose-300"}`}>
+                {isAvailable ? t("stock.in") : t("stock.out")}
+              </span>
             </div>
 
             <ProductPurchase productId={product.id} stock={isAvailable ? product.stock : 0} />
 
-            <div className="mt-6 border-t border-slate-200 pt-5">
-              {details.map((detail) => (
-                <div key={detail.label} className="flex gap-3 py-1 text-xs">
-                  <span className="w-24 text-slate-500">{detail.label}:</span>
-                  <span className="font-semibold text-slate-800">{detail.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="mt-7 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-          <h2 className="border-b border-slate-200 pb-4 text-sm font-bold text-blue-600">{t("product.description")}</h2>
-          <div className="mt-5 grid gap-5 md:grid-cols-[1fr_auto] md:items-start">
-            <div>
-              <p className="text-sm leading-7 text-slate-600">{product.description || t("product.defaultDescription")}</p>
-              <div className="mt-4 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
-                <Feature text={t("product.original")} />
-                <Feature text={t("product.delivery")} />
-              </div>
-            </div>
-            <div className="grid gap-2 rounded-xl bg-slate-50 p-4 text-xs text-slate-600 sm:grid-cols-2 md:grid-cols-1">
+            <div className="mt-5 grid grid-cols-3 gap-2 rounded-xl border border-slate-800 bg-[#0b1220] p-3 text-[11px] text-slate-300 sm:text-xs">
               <Info icon={Truck} text={t("product.shipping")} />
               <Info icon={Banknote} text={t("product.payment")} />
               <Info icon={Headset} text={t("product.support")} />
             </div>
+
+            <div className="mt-5">
+              <h2 className="text-sm font-bold text-white">{t("product.description")}</h2>
+              <p dir="auto" className="text-flow mt-2 whitespace-pre-line text-sm leading-7 text-slate-300">
+                {product.description || t("product.defaultDescription")}
+              </p>
+              <div className="mt-3 space-y-2 text-sm text-slate-300">
+                <Feature text={t("product.original")} />
+                <Feature text={t("product.feature1")} />
+                <Feature text={t("product.feature3")} />
+              </div>
+            </div>
+
+            {details.length > 0 && (
+              <dl className="mt-5 divide-y divide-slate-800 rounded-xl border border-slate-800 bg-[#0b1220] text-xs">
+                {details.map((detail) => (
+                  <div key={detail.label} className="flex gap-3 px-3 py-2.5">
+                    <dt className="w-24 shrink-0 text-slate-500">{detail.label}</dt>
+                    <dd dir="auto" className="text-flow font-semibold text-white">{detail.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
           </div>
         </section>
       </div>
 
       {relatedProducts.length > 0 && (
-        <section className="bg-[#070d18] py-14">
+        <section className="border-t border-slate-800 py-8 md:py-12">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
-            <div className="mb-7 flex items-center justify-between gap-4">
+            <div className="mb-4 flex items-end justify-between gap-4 md:mb-6">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[.14em] text-blue-400">{t("product.alsoLike")}</p>
-                <h2 className="mt-1 text-2xl font-extrabold text-white">{t("product.related")}</h2>
+                <p className="text-[11px] font-bold uppercase tracking-[.14em] text-blue-400 sm:text-xs">{t("product.alsoLike")}</p>
+                <h2 className="mt-1 text-xl font-extrabold text-white md:text-2xl">{t("product.related")}</h2>
               </div>
-              <Link href="/store" className="text-sm font-bold text-blue-400 transition hover:text-blue-300">{t("product.viewAll")}</Link>
+              <Link href="/store" className="shrink-0 text-sm font-bold text-blue-400 transition hover:text-blue-300">{t("product.viewAll")}</Link>
             </div>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
               {relatedProducts.map((item) => (
                 <ProductCard key={item.id} id={item.id} slug={item.slug} name={item.name} category={item.category} price={`${item.price.toFixed(2)} MAD`} inStock={item.stock > 0} image={item.image} />
               ))}
@@ -139,7 +136,7 @@ export default async function ProductPage({ params }: PageProps) {
 function Feature({ text }: { text: string }) {
   return (
     <div className="flex items-start gap-2">
-      <Check size={16} className="mt-0.5 shrink-0 text-blue-600" strokeWidth={2.6} />
+      <Check size={16} className="mt-1 shrink-0 text-blue-400" strokeWidth={2.6} />
       <span>{text}</span>
     </div>
   );
@@ -147,9 +144,9 @@ function Feature({ text }: { text: string }) {
 
 function Info({ icon: Icon, text }: { icon: typeof Truck; text: string }) {
   return (
-    <div className="flex items-center gap-2">
-      <Icon size={15} className="text-blue-600" />
-      <span>{text}</span>
+    <div className="flex flex-col items-center gap-1.5 text-center">
+      <Icon size={18} className="text-blue-400" />
+      <span className="leading-tight">{text}</span>
     </div>
   );
 }

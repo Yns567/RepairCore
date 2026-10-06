@@ -16,67 +16,51 @@ export default async function Hero() {
         }}
       />
       <div
-        className="pointer-events-none absolute -top-40 right-[-10%] h-[520px] w-[520px] rounded-full bg-blue-600/20 blur-[120px]"
+        className="pointer-events-none absolute -top-40 end-[-10%] h-[420px] w-[420px] rounded-full bg-blue-600/20 blur-[120px] md:h-[520px] md:w-[520px]"
         aria-hidden
       />
 
-      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 py-20 md:py-28 lg:grid-cols-2">
-        {/* Copy */}
+      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-4 py-8 sm:px-6 md:py-20 lg:grid-cols-2 lg:py-24">
         <div>
-          <span className="inline-flex items-center gap-2 rounded-full border border-slate-800 bg-[#0F1626] px-3 py-1 text-xs font-medium text-slate-400">
+          <span className="inline-flex items-center gap-2 rounded-full border border-slate-800 bg-[#0F1626] px-3 py-1 text-[11px] font-medium text-slate-400 sm:text-xs">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
             {t("hero.badge")}
           </span>
 
-          <h1 className="mt-6 text-4xl font-extrabold leading-[1.1] tracking-tight text-white md:text-5xl lg:text-6xl">
+          <h1 className="mt-4 text-[28px] font-extrabold leading-[1.2] tracking-tight text-white sm:text-4xl md:mt-6 md:text-5xl lg:text-6xl">
             {t("hero.title1")}
             <br />
             {t("hero.title2")}
           </h1>
 
-          <p className="mt-6 max-w-lg text-base leading-relaxed text-slate-400 md:text-lg">
+          <p className="mt-3 max-w-lg text-sm leading-relaxed text-slate-400 md:mt-6 md:text-lg">
             {t("hero.text")}
           </p>
 
-          <div className="mt-8 flex flex-wrap items-center gap-4">
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap md:mt-8 md:gap-4">
             <Link
-              href="/hardware"
-              className="rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-900/30 transition-colors hover:bg-blue-500"
+              href="/store"
+              className="rounded-lg bg-blue-600 px-5 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-blue-900/30 transition-colors hover:bg-blue-500 md:px-6"
             >
               {t("hero.shopHardware")}
             </Link>
             <Link
-              href="/software"
-              className="rounded-lg border border-slate-700 px-6 py-3 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+              href="/services"
+              className="rounded-lg border border-slate-700 px-5 py-3 text-center text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white md:px-6"
             >
-              {t("hero.exploreSoftware")}
+              {t("nav.gsmServices")}
             </Link>
           </div>
 
-          <div className="mt-10 grid grid-cols-3 gap-6 border-t border-slate-800 pt-6 text-slate-400">
-            <div className="flex items-center gap-2">
-              <ShieldCheck size={18} className="shrink-0 text-blue-400" />
-              <span className="text-xs leading-tight">
-                {t("hero.verified")}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Truck size={18} className="shrink-0 text-blue-400" />
-              <span className="text-xs leading-tight">
-                {t("hero.dispatch")}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Headset size={18} className="shrink-0 text-blue-400" />
-              <span className="text-xs leading-tight">
-                {t("hero.support")}
-              </span>
-            </div>
+          <div className="mt-6 grid grid-cols-3 gap-2 border-t border-slate-800 pt-4 text-slate-400 md:mt-10 md:gap-6 md:pt-6">
+            <TrustItem icon={<ShieldCheck size={18} />} label={t("hero.verified")} />
+            <TrustItem icon={<Truck size={18} />} label={t("hero.dispatch")} />
+            <TrustItem icon={<Headset size={18} />} label={t("hero.support")} />
           </div>
         </div>
 
-        {/* Signature visual: diagnostic terminal */}
-        <div className="relative mx-auto w-full max-w-md">
+        {/* Signature visual: diagnostic terminal. Desktop only, it costs too much height on phones. */}
+        <div className="relative mx-auto hidden w-full max-w-md lg:block">
           <div className="absolute -inset-4 -z-10 rounded-3xl bg-blue-600/10 blur-2xl" />
 
           <div dir="ltr" className="overflow-hidden rounded-2xl border border-slate-800 bg-[#0B1220] shadow-2xl shadow-black/40">
@@ -90,24 +74,13 @@ export default async function Hero() {
             </div>
 
             <div className="space-y-2.5 p-5 font-mono text-[13px]">
+              <p className="text-slate-500">&gt; running full board scan...</p>
+              <p className="text-emerald-400">CPU / SoC ................ OK</p>
+              <p className="text-emerald-400">Battery health ........... 91%</p>
+              <p className="text-amber-400">Charging IC .......... check</p>
+              <p className="text-emerald-400">Display driver ........... OK</p>
               <p className="text-slate-500">
-                &gt; running full board scan...
-              </p>
-              <p className="text-emerald-400">
-                CPU / SoC ................ OK
-              </p>
-              <p className="text-emerald-400">
-                Battery health ........... 91%
-              </p>
-              <p className="text-amber-400">
-                Charging IC .......... check
-              </p>
-              <p className="text-emerald-400">
-                Display driver ........... OK
-              </p>
-              <p className="text-slate-500">
-                &gt; unlock module: <span className="text-blue-400">Z3X</span>{" "}
-                connected
+                &gt; unlock module: <span className="text-blue-400">Z3X</span> connected
               </p>
               <p className="flex items-center gap-1 text-slate-300">
                 &gt; ready for repair
@@ -118,5 +91,14 @@ export default async function Hero() {
         </div>
       </div>
     </section>
+  );
+}
+
+function TrustItem({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <div className="flex flex-col items-center gap-1 text-center sm:flex-row sm:gap-2 sm:text-start">
+      <span className="shrink-0 text-blue-400">{icon}</span>
+      <span className="text-[11px] leading-tight sm:text-xs">{label}</span>
+    </div>
   );
 }

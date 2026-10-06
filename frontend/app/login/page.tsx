@@ -46,8 +46,8 @@ function LoginForm() {
   }
 
   return (
-    <main className="mx-auto max-w-md px-6 py-24">
-      <h1 className="text-3xl font-bold text-white">{t("auth.signIn")}</h1>
+    <main className="mx-auto w-full max-w-md px-4 sm:px-6 py-8 md:py-16">
+      <h1 className="text-2xl font-bold md:text-3xl text-white">{t("auth.signIn")}</h1>
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-4">
         <input type="email" placeholder={t("auth.email")} value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" className={inputClass} />
@@ -78,7 +78,7 @@ function LoginForm() {
 
 function Loading() {
   const { t } = useT();
-  return <main className="mx-auto max-w-md px-6 py-24 text-slate-400">{t("auth.loading")}</main>;
+  return <main className="mx-auto w-full max-w-md px-4 sm:px-6 py-8 md:py-16 text-slate-400">{t("auth.loading")}</main>;
 }
 
 export default function LoginPage() {

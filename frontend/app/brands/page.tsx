@@ -21,7 +21,7 @@ export default async function BrandsPage() {
   const brands = products.flatMap((product) => (product.brand ? [product.brand] : []));
 
   return (
-    <main className="min-h-[calc(100vh-120px)] bg-[#070d18] px-6 py-16">
+    <main className="min-h-[calc(100vh-120px)] bg-[#070d18] px-4 sm:px-6 py-6 md:py-12">
       <section className="mx-auto max-w-7xl">
         <span className="text-xs font-semibold uppercase tracking-widest text-blue-400">{t("brands.kicker")}</span>
         <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-white md:text-5xl">{t("brands.title")}</h1>

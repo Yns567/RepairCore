@@ -35,8 +35,8 @@ export default async function CourseDetailPage({
   }
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-16">
-      <h1 className="text-4xl font-bold text-white">{course.title}</h1>
+    <main className="mx-auto w-full max-w-4xl px-4 sm:px-6 py-6 md:py-12">
+      <h1 className="text-2xl font-bold md:text-4xl text-white">{course.title}</h1>
 
       {course.description && (
         <p className="mt-4 text-slate-400">{course.description}</p>

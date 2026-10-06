@@ -33,10 +33,10 @@ export default async function WalletPage() {
   ]);
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-16">
+    <main className="mx-auto w-full max-w-5xl px-4 sm:px-6 py-6 md:py-12">
       <Link href="/account" className="text-sm font-medium text-blue-400 hover:text-blue-300">{t("wallet.back")}</Link>
       <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold text-white">{t("wallet.title")}</h1>
+        <h1 className="text-2xl font-bold md:text-3xl text-white">{t("wallet.title")}</h1>
         <Link href="/account/wallet/top-up" className="rounded-lg bg-blue-600 px-5 py-2.5 font-semibold text-white hover:bg-blue-500">
           {t("wallet.topUp")}
         </Link>

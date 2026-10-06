@@ -26,7 +26,7 @@ export default async function LegalPage({ slug }: { slug: LegalSlug }) {
   const { doc, fill } = await resolve(slug);
 
   return (
-    <main className="min-h-screen bg-[#070d18] px-6 py-16">
+    <main className="min-h-screen bg-[#070d18] px-4 sm:px-6 py-6 md:py-12">
       <article className="mx-auto max-w-3xl">
         <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl">{doc.title}</h1>
         <p className="mt-4 leading-7 text-slate-400">{fill(doc.intro)}</p>

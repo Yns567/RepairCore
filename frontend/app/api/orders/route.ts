@@ -112,7 +112,6 @@ export async function POST(request: Request) {
     revalidatePath("/", "layout");
     revalidatePath("/cart");
     revalidatePath("/store");
-    revalidatePath("/hardware");
     return NextResponse.json({ order }, { status: 201 });
   } catch (error) {
     const message = error instanceof OrderError

@@ -10,10 +10,10 @@ export default async function CtaBand() {
         className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[600px] -translate-x-1/2 rounded-full bg-blue-600/15 blur-[100px]"
         aria-hidden
       />
-      <div className="relative mx-auto max-w-4xl px-6 py-20 text-center">
-        <h2 className="text-3xl font-bold tracking-tight text-white md:text-4xl">{t("cta.title")}</h2>
+      <div className="relative mx-auto max-w-4xl px-4 py-10 text-center sm:px-6 md:py-20">
+        <h2 className="text-2xl font-bold tracking-tight text-white md:text-4xl">{t("cta.title")}</h2>
         <p className="mx-auto mt-4 max-w-xl text-slate-400">{t("cta.text")}</p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3 md:mt-8 md:gap-4">
           <Link
             href="/register"
             className="rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-900/30 transition-colors hover:bg-blue-500"

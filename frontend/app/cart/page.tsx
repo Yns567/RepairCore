@@ -12,8 +12,8 @@ export default async function CartPage() {
 
   if (items.length === 0) {
     return (
-      <main className="mx-auto max-w-3xl px-6 py-24 text-center">
-        <h1 className="text-3xl font-bold text-white">{t("cartPage.emptyTitle")}</h1>
+      <main className="mx-auto w-full max-w-3xl px-4 sm:px-6 py-12 md:py-20 text-center">
+        <h1 className="text-2xl font-bold md:text-3xl text-white">{t("cartPage.emptyTitle")}</h1>
         <p className="mt-4 text-slate-400">{t("cartPage.emptyText")}</p>
         <Link
           href="/store"
@@ -26,10 +26,10 @@ export default async function CartPage() {
   }
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-16">
-      <h1 className="text-4xl font-bold text-white">{t("cartPage.title")}</h1>
+    <main className="mx-auto w-full max-w-5xl px-4 sm:px-6 py-6 md:py-12">
+      <h1 className="text-2xl font-bold md:text-4xl text-white">{t("cartPage.title")}</h1>
 
-      <div className="mt-10 space-y-4">
+      <div className="mt-5 space-y-3 md:mt-8">
         {items.map((item) => (
           <CartLineItem
             key={item.id}
@@ -42,17 +42,19 @@ export default async function CartPage() {
         ))}
       </div>
 
-      <div className="mt-10 flex items-center justify-between rounded-2xl border border-slate-800 bg-[#111827] p-6">
-        <span className="text-lg text-slate-300">{t("cartPage.total")}</span>
-        <span className="text-2xl font-bold text-blue-400" dir="ltr">{total.toFixed(2)} MAD</span>
+      {/* Total and checkout stay reachable above the bottom navigation on phones. */}
+      <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 -mx-4 mt-5 flex items-center gap-4 border-t border-slate-800 bg-[#070d18]/95 px-4 py-3 backdrop-blur md:static md:mx-0 md:mt-8 md:rounded-2xl md:border md:bg-[#111827] md:p-6">
+        <div className="min-w-0 flex-1">
+          <span className="block text-xs text-slate-400 md:text-sm">{t("cartPage.total")}</span>
+          <span className="block text-xl font-extrabold text-blue-400 md:text-2xl" dir="ltr">{total.toFixed(2)} MAD</span>
+        </div>
+        <Link
+          href="/checkout"
+          className="shrink-0 rounded-lg bg-blue-600 px-6 py-3 text-center font-semibold text-white hover:bg-blue-500 md:px-10"
+        >
+          {t("cartPage.checkout")}
+        </Link>
       </div>
-
-      <Link
-        href="/checkout"
-        className="mt-6 block w-full rounded-lg bg-blue-600 py-3 text-center font-semibold text-white hover:bg-blue-500"
-      >
-        {t("cartPage.checkout")}
-      </Link>
     </main>
   );
 }

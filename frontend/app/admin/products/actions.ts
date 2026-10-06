@@ -293,7 +293,6 @@ function detectImageExtension(contents: Buffer): ImageExtension | null {
 function refreshProductViews(slug?: string) {
   revalidatePath("/", "layout");
   revalidatePath("/store");
-  revalidatePath("/hardware");
   revalidatePath("/admin/products");
   if (slug) revalidatePath(`/products/${slug}`);
 }

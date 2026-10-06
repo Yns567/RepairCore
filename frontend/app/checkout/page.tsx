@@ -24,8 +24,8 @@ export default async function CheckoutPage() {
   const [wallet, { t }] = await Promise.all([getWallet(session.user.id, PRICING_CURRENCY.store), getT()]);
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-16">
-      <h1 className="text-3xl font-bold text-white">{t("checkout.title")}</h1>
+    <main className="mx-auto w-full max-w-2xl px-4 sm:px-6 py-6 md:py-12">
+      <h1 className="text-2xl font-bold md:text-3xl text-white">{t("checkout.title")}</h1>
 
       <div className="mt-6 rounded-2xl border border-slate-800 bg-[#111827] p-6">
         <p className="text-slate-300">

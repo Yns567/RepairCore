@@ -27,11 +27,11 @@ export default async function OrdersPage() {
   ]);
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-16">
+    <main className="mx-auto w-full max-w-5xl px-4 sm:px-6 py-6 md:py-12">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm font-semibold text-blue-400">{t("account.kicker")}</p>
-          <h1 className="mt-2 text-3xl font-bold text-white">{t("orders.title")}</h1>
+          <h1 className="mt-2 text-2xl font-bold md:text-3xl text-white">{t("orders.title")}</h1>
         </div>
         <Link href="/store" className="text-sm font-semibold text-blue-400 hover:text-blue-300">{t("orders.continue")}</Link>
       </div>

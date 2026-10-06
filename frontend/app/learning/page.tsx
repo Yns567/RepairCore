@@ -11,8 +11,8 @@ export default async function LearningPage() {
   });
 
   return (
-    <main className="mx-auto max-w-7xl px-6 py-20">
-      <h1 className="text-4xl font-bold text-white">{t("learning.title")}</h1>
+    <main className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-6 md:py-12">
+      <h1 className="text-2xl font-bold md:text-4xl text-white">{t("learning.title")}</h1>
 
       <p className="mt-4 text-slate-400">
         {t("learning.subtitle")}

@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronRight, CircleUserRound, Grid2X2, Menu, Search, ShieldCheck, ShoppingCart, X } from "lucide-react";
+import { ChevronRight, CircleUserRound, Grid2X2, Menu, ShieldCheck, X } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import type { MessageKey } from "@/lib/i18n/messages";
 import LanguageSwitcher from "./LanguageSwitcher";
 
-const storeLinks: { href: string; label: MessageKey }[] = [
+type NavLink = { href: string; label: MessageKey };
+
+const storeLinks: NavLink[] = [
   { href: "/store?category=programmers", label: "nav.programmers" },
   { href: "/store?category=boxes", label: "nav.boxesDongles" },
   { href: "/store?category=tools", label: "nav.repairTools" },
@@ -18,14 +20,21 @@ const storeLinks: { href: string; label: MessageKey }[] = [
   { href: "/brands", label: "nav.brands" },
 ];
 
-const serviceLinks: { href: string; label: MessageKey }[] = [
+const serviceLinks: NavLink[] = [
   { href: "/services?category=IMEI", label: "nav.imeiServices" },
   { href: "/services?category=SERVER_CREDIT", label: "nav.toolCredits" },
   { href: "/services?category=TOOL_RENTAL", label: "nav.toolRent" },
-  { href: "/account/services", label: "nav.myServiceOrders" },
 ];
 
-export default function MobileNav({ cartItemCount }: { cartItemCount: number }) {
+const accountLinks: NavLink[] = [
+  { href: "/orders", label: "nav.orders" },
+  { href: "/account/services", label: "nav.myServiceOrders" },
+  { href: "/account/wallet", label: "nav.wallet" },
+  { href: "/account/wallet/top-up", label: "nav.topUp" },
+  { href: "/contact", label: "nav.contact" },
+];
+
+export default function MobileNav() {
   const { t } = useT();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -45,84 +54,90 @@ export default function MobileNav({ cartItemCount }: { cartItemCount: number }) 
     };
   }, [isOpen]);
 
-  const linkClass = "flex items-center justify-between border-b border-slate-800/80 py-4 text-sm font-medium text-slate-200 transition hover:text-blue-400";
+  const close = () => setIsOpen(false);
 
   return (
     <>
       <button
         type="button"
-        className="ms-auto rounded-lg p-2 text-slate-300 transition hover:bg-slate-800 hover:text-white md:hidden"
+        className="-ms-2 rounded-lg p-2 text-slate-300 transition hover:bg-slate-800 hover:text-white md:hidden"
         aria-label={t("nav.open")}
         aria-expanded={isOpen}
         aria-controls="mobile-navigation"
         onClick={() => setIsOpen(true)}
       >
-        <Menu size={25} />
+        <Menu size={24} />
       </button>
 
       {isOpen && (
         <div
           className="fixed inset-0 z-[60] bg-slate-950/75 backdrop-blur-sm md:hidden"
           role="presentation"
-          onClick={() => setIsOpen(false)}
+          onClick={close}
         >
           <aside
             id="mobile-navigation"
             role="dialog"
             aria-modal="true"
             aria-label={t("nav.mobile")}
-            className="ms-auto flex h-full w-[min(22rem,88vw)] flex-col overflow-y-auto border-s border-slate-700 bg-[#0b1220] shadow-2xl"
+            className="me-auto flex h-full w-[min(20rem,85vw)] flex-col overflow-y-auto border-e border-slate-700 bg-[#0b1220] shadow-2xl"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-slate-800 px-5 py-5">
-              <span className="text-lg font-extrabold tracking-tight text-white">REPAIRCORE</span>
-              <button type="button" onClick={() => setIsOpen(false)} className="rounded-lg p-2 text-slate-300 hover:bg-slate-800 hover:text-white" aria-label={t("nav.close")}>
+            <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
+              <span className="text-lg font-extrabold tracking-tight text-white">{t("nav.menu")}</span>
+              <button type="button" onClick={close} className="rounded-lg p-2 text-slate-300 hover:bg-slate-800 hover:text-white" aria-label={t("nav.close")}>
                 <X size={22} />
               </button>
             </div>
 
-            <form action="/store" className="relative mx-5 mt-5">
-              <Search size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input name="search" placeholder={t("nav.search")} className="w-full rounded-lg border border-slate-700 bg-slate-900 py-3 ps-10 pe-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-blue-500" />
-            </form>
-
-            <div className="mx-5 mt-5 grid grid-cols-2 gap-3">
-              <Link href="/account" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 rounded-lg border border-slate-700 px-3 py-3 text-sm font-medium text-slate-200 hover:border-blue-500 hover:text-white">
-                <CircleUserRound size={18} /> {t("nav.account")}
+            <div className="flex items-center justify-between gap-3 border-b border-slate-800 px-5 py-3">
+              <Link href="/account" onClick={close} className="flex items-center gap-2 text-sm font-semibold text-white">
+                <CircleUserRound size={18} className="text-blue-400" /> {t("nav.account")}
               </Link>
-              <Link href="/cart" onClick={() => setIsOpen(false)} className="relative flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-3 text-sm font-semibold text-white hover:bg-blue-500">
-                <ShoppingCart size={18} /> {t("nav.cart")}
-                {cartItemCount > 0 && <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[10px]">{cartItemCount}</span>}
-              </Link>
+              <LanguageSwitcher size="sm" />
             </div>
 
-            <LanguageSwitcher className="mx-5 mt-4" />
-
-            <nav className="mt-6 border-t border-slate-800 px-5 py-4">
-              <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-slate-500"><Grid2X2 size={14} /> {t("nav.shopCategories")}</p>
-              {storeLinks.map((link) => (
-                <Link key={link.href} href={link.href} onClick={() => setIsOpen(false)} className={linkClass}>
-                  {t(link.label)}
-                  <ChevronRight size={17} className="text-slate-500 rtl:rotate-180" />
-                </Link>
-              ))}
-
-              <p className="mb-2 mt-6 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-blue-400"><ShieldCheck size={14} /> {t("nav.gsmServices")}</p>
-              {serviceLinks.map((link) => (
-                <Link key={link.href} href={link.href} onClick={() => setIsOpen(false)} className={linkClass}>
-                  {t(link.label)}
-                  <ChevronRight size={17} className="text-slate-500 rtl:rotate-180" />
-                </Link>
-              ))}
-
-              <Link href="/contact" onClick={() => setIsOpen(false)} className="flex items-center justify-between py-4 text-sm font-medium text-slate-200 transition hover:text-blue-400">
-                {t("nav.contact")}
-                <ChevronRight size={17} className="text-slate-500 rtl:rotate-180" />
-              </Link>
+            <nav className="px-5 py-2">
+              <Section title={t("nav.shopCategories")} icon={<Grid2X2 size={14} />} links={storeLinks} t={t} onNavigate={close} />
+              <Section title={t("nav.gsmServices")} icon={<ShieldCheck size={14} />} links={serviceLinks} t={t} onNavigate={close} accent />
+              <Section title={t("nav.account")} icon={<CircleUserRound size={14} />} links={accountLinks} t={t} onNavigate={close} />
             </nav>
           </aside>
         </div>
       )}
     </>
+  );
+}
+
+function Section({
+  title,
+  icon,
+  links,
+  t,
+  onNavigate,
+  accent = false,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  links: NavLink[];
+  t: (key: MessageKey) => string;
+  onNavigate: () => void;
+  accent?: boolean;
+}) {
+  return (
+    <div className="py-3">
+      <p className={`mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest ${accent ? "text-blue-400" : "text-slate-500"}`}>{icon} {title}</p>
+      {links.map((link) => (
+        <Link
+          key={link.href}
+          href={link.href}
+          onClick={onNavigate}
+          className="flex items-center justify-between border-b border-slate-800/70 py-3 text-sm font-medium text-slate-200 transition last:border-0 hover:text-blue-400"
+        >
+          {t(link.label)}
+          <ChevronRight size={16} className="text-slate-500 rtl:rotate-180" />
+        </Link>
+      ))}
+    </div>
   );
 }

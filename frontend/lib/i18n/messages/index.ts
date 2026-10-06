@@ -5,8 +5,9 @@ import { catalog } from "./catalog";
 import { home } from "./home";
 import { layout } from "./layout";
 import { store } from "./store";
+import { ui } from "./ui";
 
-const groups = [layout, home, store, auth, account, catalog] as const;
+const groups = [layout, home, store, auth, account, catalog, ui] as const;
 
 type Group = (typeof groups)[number];
 type KeysOf<G> = G extends { en: infer E } ? keyof E : never;

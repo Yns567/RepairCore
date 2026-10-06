@@ -13,7 +13,7 @@ export default async function TopUpPage() {
   const { t } = await getT();
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-16">
+    <main className="mx-auto w-full max-w-3xl px-4 sm:px-6 py-6 md:py-12">
       <Link href="/account/wallet" className="text-sm font-medium text-blue-400 hover:text-blue-300">{t("topup.back")}</Link>
       <h1 className="mt-4 text-3xl font-bold text-white">{t("topup.title")}</h1>
       <p className="mt-2 text-slate-400">

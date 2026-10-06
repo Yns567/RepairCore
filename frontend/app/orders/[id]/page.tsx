@@ -34,7 +34,7 @@ export default async function OrderConfirmationPage({
   const cancelled = order.status === "CANCELLED";
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-16">
+    <main className="mx-auto w-full max-w-2xl px-4 sm:px-6 py-6 md:py-12">
       <div className={`rounded-2xl border p-6 text-center ${cancelled ? "border-rose-700 bg-rose-950/30" : "border-green-700 bg-green-950/30"}`}>
         <h1 className="text-2xl font-bold text-white">{cancelled ? t("orders.cancelledTitle") : t("orders.placed")}</h1>
         <p className="mt-2 text-slate-400">

@@ -54,8 +54,8 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
   const { t } = useT();
   return (
-    <main className="mx-auto max-w-md px-6 py-20">
-      <h1 className="text-3xl font-bold text-white">{t("auth.resetTitle")}</h1>
+    <main className="mx-auto w-full max-w-md px-4 sm:px-6 py-6 md:py-12">
+      <h1 className="text-2xl font-bold md:text-3xl text-white">{t("auth.resetTitle")}</h1>
       <Suspense>
         <ResetPasswordForm />
       </Suspense>

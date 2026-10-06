@@ -76,7 +76,16 @@ function toXml(parameters: Record<string, string | number>) {
   return `<PARAMETERS>${body}</PARAMETERS>`;
 }
 
-type ApiResponse = { SUCCESS?: unknown; ERROR?: { MESSAGE?: string }[] };
+type ApiResponse = { SUCCESS?: unknown; ERROR?: { MESSAGE?: unknown }[] };
+
+/** Error MESSAGE is a string, or a validation object like {"username":["... required"]}. */
+function errorText(message: unknown): string {
+  if (typeof message === "string") return message;
+  if (message && typeof message === "object") {
+    return Object.values(message).flat().map(String).join(" ") || "Provider returned an error.";
+  }
+  return "Provider returned an error.";
+}
 
 async function call(action: string, parameters?: Record<string, string | number>) {
   const settings = config();
@@ -109,7 +118,7 @@ async function call(action: string, parameters?: Record<string, string | number>
   const data = (await response.json().catch(() => null)) as ApiResponse | null;
   if (!data) throw new ProviderError(`Unexpected provider response (HTTP ${response.status}).`, false);
   if (data.ERROR?.length) {
-    throw new ProviderError(data.ERROR[0]?.MESSAGE || "Provider returned an error.", true);
+    throw new ProviderError(errorText(data.ERROR[0]?.MESSAGE), true);
   }
   return data.SUCCESS;
 }

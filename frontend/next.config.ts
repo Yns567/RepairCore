@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Self-contained server bundle for the Cloud Run container image.
+  output: "standalone",
   experimental: {
     serverActions: {
       bodySizeLimit: "4.5mb",
@@ -16,6 +18,15 @@ const nextConfig: NextConfig = {
         pathname: "/product-images/**",
         search: "",
       },
+      ...(process.env.GCS_BUCKET
+        ? [{
+            protocol: "https" as const,
+            hostname: "storage.googleapis.com",
+            port: "",
+            pathname: `/${process.env.GCS_BUCKET}/product-images/**`,
+            search: "",
+          }]
+        : []),
     ],
   },
   async redirects() {

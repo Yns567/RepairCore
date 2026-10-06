@@ -1,6 +1,6 @@
 "use server";
 
-import { del, put } from "@vercel/blob";
+import { deleteImage, hasImageStorage, putImage } from "@/lib/image-storage";
 import { mkdir, unlink, writeFile } from "fs/promises";
 import path from "path";
 import { revalidatePath } from "next/cache";
@@ -93,11 +93,7 @@ async function saveImage(image: FormDataEntryValue | null): Promise<SavedImage |
       png: "image/png",
       webp: "image/webp",
     };
-    const blob = await put(`product-images/${filename}`, contents, {
-      access: "public",
-      addRandomSuffix: true,
-      allowOverwrite: false,
-      cacheControlMaxAge: 365 * 24 * 60 * 60,
+    const blob = await putImage(`product-images/${filename}`, contents, {
       contentType: contentTypes[detectedExtension],
       maximumSizeInBytes: MAX_IMAGE_BYTES,
     });
@@ -105,7 +101,7 @@ async function saveImage(image: FormDataEntryValue | null): Promise<SavedImage |
     return { url: blob.url, blobPath: blob.pathname, localPath: null };
   }
 
-  if (process.env.VERCEL) {
+  if (process.env.VERCEL || process.env.K_SERVICE) {
     throw new Error(
       "Product image storage is not configured for this deployment.",
     );
@@ -149,11 +145,7 @@ async function saveProductImages(formData: FormData): Promise<SavedImageSlots> {
 }
 
 function hasBlobStoreConfiguration() {
-  // In Vercel Functions, OIDC arrives through the request context rather than
-  // process.env. The Blob SDK reads it automatically once a store ID exists.
-  return Boolean(
-    process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID,
-  );
+  return hasImageStorage();
 }
 
 function isManagedBlobPath(blobPath: string) {
@@ -209,7 +201,7 @@ async function deleteBlobImage(blobPath: string | null | undefined) {
       return;
     }
 
-    await del(blobPath);
+    await deleteImage(blobPath);
   } catch {
     // The database change has already succeeded. A later cleanup can safely
     // remove this orphan without making the administrator repeat the action.

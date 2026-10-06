@@ -1,0 +1,35 @@
+# Builds the web + migrate images and pushes them to Artifact Registry.
+# Run from frontend/:  gcloud builds submit --config cloudbuild.yaml --substitutions=_REGION=...,_SITE_URL=...,_GCS_BUCKET=...
+substitutions:
+  _REGION: europe-southwest1
+  _REPO: repaircore
+  _SITE_URL: ""
+  _GCS_BUCKET: ""
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    secretEnv: [ACTIONS_KEY]
+    env: [DOCKER_BUILDKIT=1]
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        printf '%s' "$$ACTIONS_KEY" > /tmp/actions_key
+        IMAGE=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}
+        docker build --secret id=actions_key,src=/tmp/actions_key \
+          --build-arg NEXT_PUBLIC_SITE_URL=${_SITE_URL} --build-arg GCS_BUCKET=${_GCS_BUCKET} \
+          -t $$IMAGE/web:latest -t $$IMAGE/web:$BUILD_ID .
+        docker build --target migrate -t $$IMAGE/migrate:latest .
+        rm -f /tmp/actions_key
+        docker push --all-tags $$IMAGE/web
+        docker push $$IMAGE/migrate:latest
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/$PROJECT_ID/secrets/NEXT_SERVER_ACTIONS_ENCRYPTION_KEY/versions/latest
+      env: ACTIONS_KEY
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+timeout: 1800s

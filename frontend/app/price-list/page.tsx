@@ -7,7 +7,7 @@ import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "Price list",
+  title: "Product list",
 };
 
 export default async function PriceListPage({

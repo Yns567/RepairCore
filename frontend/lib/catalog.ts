@@ -6,6 +6,7 @@ export const catalogCategories = [
   { slug: "tools", label: "Repair Tools", key: "nav.repairTools" },
   { slug: "spare-parts", label: "Spare Parts", key: "nav.spareParts" },
   { slug: "accessories", label: "Accessories", key: "nav.accessories" },
+  { slug: "digital", label: "Digital", key: "nav.digital" },
 ] as const satisfies readonly { slug: string; label: string; key: MessageKey }[];
 
 /** Translated category label; unknown categories fall back to their raw value. */

@@ -37,6 +37,7 @@ const shopLinks: NavLink[] = [
   { href: "/store?category=tools", label: "nav.repairTools" },
   { href: "/store?category=spare-parts", label: "nav.spareParts" },
   { href: "/store?category=accessories", label: "nav.accessories" },
+  { href: "/store?category=digital", label: "nav.digital" },
   { href: "/store?sort=new", label: "nav.newArrivals" },
   { href: "/brands", label: "nav.brands" },
 ];

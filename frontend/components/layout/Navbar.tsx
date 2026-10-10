@@ -110,6 +110,7 @@ export default async function Navbar() {
             <Link href="/store?category=tools" className="transition hover:text-blue-400">{t("nav.tools")}</Link>
             <Link href="/store?category=spare-parts" className="transition hover:text-blue-400">{t("nav.spareParts")}</Link>
             <Link href="/store?category=accessories" className="transition hover:text-blue-400">{t("nav.accessories")}</Link>
+            <Link href="/store?category=digital" className="transition hover:text-blue-400">{t("nav.digital")}</Link>
             <Link href="/price-list" className="transition hover:text-blue-400">{t("list.title")}</Link>
             <span className="h-5 w-px bg-slate-700" aria-hidden />
             <Link href="/services?category=IMEI" className="font-semibold text-blue-300 transition hover:text-blue-200">{t("nav.imeiServices")}</Link>

@@ -421,6 +421,31 @@ export async function updateProduct(
   redirect("/admin/products");
 }
 
+export type ToggleStatusResult = { ok: boolean; status?: string; message?: string };
+
+export async function toggleProductStatus(id: number): Promise<ToggleStatusResult> {
+  await requireAdmin();
+  if (!Number.isSafeInteger(id) || id < 1) return { ok: false, message: "Invalid product." };
+
+  const current = await prisma.product.findUnique({
+    where: { id },
+    select: { status: true, version: true, slug: true },
+  });
+  if (!current) return { ok: false, message: "Product not found." };
+
+  const next = current.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+  const updated = await prisma.product.updateMany({
+    where: { id, version: current.version },
+    data: { status: next, version: { increment: 1 } },
+  });
+  if (updated.count !== 1) {
+    return { ok: false, message: "This product changed in another session. Refresh the page and try again." };
+  }
+
+  refreshProductViews(current.slug);
+  return { ok: true, status: next };
+}
+
 export type DeleteProductResult = { ok: boolean; message?: string };
 
 export async function deleteProduct(id: number): Promise<DeleteProductResult> {

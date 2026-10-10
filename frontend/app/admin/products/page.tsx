@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import DeleteProductButton from "./DeleteProductButton";
+import ProductStatusToggle from "./ProductStatusToggle";
 
 export default async function ProductsPage() {
   const products = await prisma.product.findMany({
@@ -38,7 +39,7 @@ export default async function ProductsPage() {
                 <td className="px-4 py-4">{product.category ?? "—"}</td>
                 <td className="px-4 py-4">{product.price.toFixed(2)} MAD</td>
                 <td className="px-4 py-4">{product.stock}</td>
-                <td className="px-4 py-4">{product.status}</td>
+                <td className="px-4 py-4"><ProductStatusToggle id={product.id} status={product.status} /></td>
                 <td className="px-4 py-4">
                   <div className="flex items-center justify-end gap-4">
                     <Link

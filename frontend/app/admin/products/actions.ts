@@ -299,30 +299,52 @@ function refreshProductViews(slug?: string) {
   if (slug) revalidatePath(`/products/${slug}`);
 }
 
+// Turns any save failure into a short message to show on the form, so a bad
+// slug, a missing image store or a validation error never crashes the page.
+function productErrorMessage(error: unknown): string {
+  const code = (error as { code?: string }).code;
+  const text = error instanceof Error ? error.message : String(error);
+  if (code === "P2002" || code === "23505" || /unique|duplicate key/i.test(text)) {
+    return "A product with this URL slug already exists. Choose a different slug.";
+  }
+  // Our own thrown messages (validation, image upload) are safe to show as-is.
+  if (error instanceof Error && error.message && !/prisma|invocation/i.test(error.message)) {
+    return error.message;
+  }
+  console.error("Failed to save product.", { error: text });
+  return "We could not save the product. Check the fields and try again.";
+}
+
 export async function createProduct(formData: FormData) {
   await requireAdmin();
-  const data = readProductForm(formData);
-  const savedImages = await saveProductImages(formData);
-  const images = compactImageSlots(savedImages);
 
   try {
-    await prisma.product.create({
-      data: {
-        ...data,
-        description: data.description || null,
-        category: data.category || null,
-        brand: data.brand || null,
-        partNumber: data.partNumber || null,
-        ...imageSlotData(images),
-        status: "ACTIVE",
-      },
-    });
+    const data = readProductForm(formData);
+    const savedImages = await saveProductImages(formData);
+    const images = compactImageSlots(savedImages);
+
+    try {
+      await prisma.product.create({
+        data: {
+          ...data,
+          description: data.description || null,
+          category: data.category || null,
+          brand: data.brand || null,
+          partNumber: data.partNumber || null,
+          ...imageSlotData(images),
+          status: "ACTIVE",
+        },
+      });
+    } catch (error) {
+      await deleteNewImages(savedImages);
+      throw error;
+    }
+
+    refreshProductViews(data.slug);
   } catch (error) {
-    await deleteNewImages(savedImages);
-    throw error;
+    redirect(`/admin/products/new?error=${encodeURIComponent(productErrorMessage(error))}`);
   }
 
-  refreshProductViews(data.slug);
   redirect("/admin/products");
 }
 
@@ -337,6 +359,7 @@ export async function updateProduct(
     throw new Error("Invalid product version.");
   }
 
+  try {
   const data = readProductForm(formData);
   const current = await prisma.product.findFirst({
     where: { id, version: expectedVersion },
@@ -418,6 +441,10 @@ export async function updateProduct(
 
   refreshProductViews(current.slug);
   refreshProductViews(data.slug);
+  } catch (error) {
+    redirect(`/admin/products/${id}/edit?error=${encodeURIComponent(productErrorMessage(error))}`);
+  }
+
   redirect("/admin/products");
 }
 

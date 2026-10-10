@@ -3,7 +3,12 @@ import ProductImageFields from "@/components/admin/ProductImageFields";
 import { catalogCategories } from "@/lib/catalog";
 import { createProduct } from "../actions";
 
-export default function NewProductPage() {
+export default async function NewProductPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
   return (
     <div className="mx-auto max-w-3xl">
       <div className="mb-6">
@@ -20,6 +25,12 @@ export default function NewProductPage() {
           Fill in the details below to list a new product in the store.
         </p>
       </div>
+
+      {error && (
+        <div className="mb-5 rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-700">
+          {error}
+        </div>
+      )}
 
       <form
         action={createProduct}

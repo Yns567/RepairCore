@@ -5,8 +5,15 @@ import { catalogCategories, getCatalogCategoryLabel } from "@/lib/catalog";
 import { prisma } from "@/lib/prisma";
 import { updateProduct } from "../../actions";
 
-export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EditProductPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
+}) {
   const { id } = await params;
+  const { error } = await searchParams;
   const productId = Number(id);
   const product = Number.isSafeInteger(productId)
     ? await prisma.product.findUnique({ where: { id: productId } })
@@ -18,6 +25,12 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
       <Link href="/admin/products" className="text-sm font-medium text-blue-600 hover:underline">← Back to products</Link>
       <h1 className="mt-3 text-2xl font-bold text-gray-900">Edit product</h1>
       <p className="mt-1 text-sm text-gray-500">Update the catalog and stock information.</p>
+
+      {error && (
+        <div className="mt-5 rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-700">
+          {error}
+        </div>
+      )}
 
       <form action={updateProduct.bind(null, product.id, product.version)} className="mt-7 space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <Field label="Product name"><input required name="name" defaultValue={product.name} className="field" /></Field>

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import DeleteProductButton from "./DeleteProductButton";
 
 export default async function ProductsPage() {
   const products = await prisma.product.findMany({
@@ -38,13 +39,16 @@ export default async function ProductsPage() {
                 <td className="px-4 py-4">{product.price.toFixed(2)} MAD</td>
                 <td className="px-4 py-4">{product.stock}</td>
                 <td className="px-4 py-4">{product.status}</td>
-                <td className="px-4 py-4 text-right">
-                  <Link
-                    href={`/admin/products/${product.id}/edit`}
-                    className="font-medium text-blue-600 hover:underline"
-                  >
-                    Edit
-                  </Link>
+                <td className="px-4 py-4">
+                  <div className="flex items-center justify-end gap-4">
+                    <Link
+                      href={`/admin/products/${product.id}/edit`}
+                      className="font-medium text-blue-600 hover:underline"
+                    >
+                      Edit
+                    </Link>
+                    <DeleteProductButton id={product.id} name={product.name} />
+                  </div>
                 </td>
               </tr>
             ))}

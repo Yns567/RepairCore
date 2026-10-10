@@ -421,9 +421,11 @@ export async function updateProduct(
   redirect("/admin/products");
 }
 
-export async function deleteProduct(id: number) {
+export type DeleteProductResult = { ok: boolean; message?: string };
+
+export async function deleteProduct(id: number): Promise<DeleteProductResult> {
   await requireAdmin();
-  if (!Number.isSafeInteger(id) || id < 1) throw new Error("Invalid product.");
+  if (!Number.isSafeInteger(id) || id < 1) return { ok: false, message: "Invalid product." };
 
   const current = await prisma.product.findUnique({
     where: { id },
@@ -435,22 +437,36 @@ export async function deleteProduct(id: number) {
       version: true,
     },
   });
-  if (!current) throw new Error("Product not found.");
+  if (!current) return { ok: false, message: "Product not found." };
 
   const blobPaths = [
     current.imageBlobPath,
     current.image2BlobPath,
     current.image3BlobPath,
   ];
-  assertBlobCleanupAvailable(blobPaths);
+  try {
+    assertBlobCleanupAvailable(blobPaths);
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? error.message : "Image storage is not configured." };
+  }
 
-  const deleted = await prisma.product.deleteMany({
-    where: { id, version: current.version },
-  });
-  if (deleted.count !== 1) {
-    throw new Error(
-      "This product changed in another session. Refresh the page and try again.",
-    );
+  try {
+    const deleted = await prisma.product.deleteMany({
+      where: { id, version: current.version },
+    });
+    if (deleted.count !== 1) {
+      return { ok: false, message: "This product changed in another session. Refresh the page and try again." };
+    }
+  } catch (error) {
+    // A product that appears in past orders cannot be removed without breaking
+    // order history, so Postgres blocks the delete with a foreign-key error.
+    if ((error as { code?: string }).code === "P2003") {
+      return {
+        ok: false,
+        message: "This product has existing orders, so it can't be deleted. Set its status to INACTIVE from Edit to hide it instead.",
+      };
+    }
+    throw error;
   }
 
   for (const blobPath of blobPaths) {
@@ -458,5 +474,6 @@ export async function deleteProduct(id: number) {
   }
 
   refreshProductViews(current.slug);
-  redirect("/admin/products");
+  revalidatePath("/admin/products");
+  return { ok: true };
 }

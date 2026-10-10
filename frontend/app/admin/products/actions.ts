@@ -459,14 +459,19 @@ export async function deleteProduct(id: number): Promise<DeleteProductResult> {
     }
   } catch (error) {
     // A product that appears in past orders cannot be removed without breaking
-    // order history, so Postgres blocks the delete with a foreign-key error.
-    if ((error as { code?: string }).code === "P2003") {
+    // order history, so the database blocks the delete with a foreign-key error.
+    // Depending on the driver this surfaces as Prisma code P2003 or the raw
+    // Postgres code 23503, so match both and never crash the page.
+    const code = (error as { code?: string }).code;
+    const text = error instanceof Error ? error.message.toLowerCase() : "";
+    if (code === "P2003" || code === "23503" || text.includes("foreign key")) {
       return {
         ok: false,
-        message: "This product has existing orders, so it can't be deleted. Set its status to INACTIVE from Edit to hide it instead.",
+        message: "This product has existing orders, so it can't be deleted. Open Edit and set its status to INACTIVE to hide it instead.",
       };
     }
-    throw error;
+    console.error("Failed to delete product.", { id, error: String(error) });
+    return { ok: false, message: "We could not delete this product. Please try again." };
   }
 
   for (const blobPath of blobPaths) {

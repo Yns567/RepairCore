@@ -32,6 +32,7 @@ export default async function OrderConfirmationPage({
   }
 
   const cancelled = order.status === "CANCELLED";
+  const digitalOnly = order.items.length > 0 && order.items.every((item) => item.product.category === "digital");
 
   return (
     <main className="mx-auto w-full max-w-2xl px-4 sm:px-6 py-6 md:py-12">
@@ -41,6 +42,12 @@ export default async function OrderConfirmationPage({
           {t("orders.number", { id: order.id })} — {tKey(`status.${order.status}`, order.status)}
         </p>
       </div>
+
+      {!cancelled && digitalOnly && (
+        <div className="mt-4 rounded-xl border border-blue-500/30 bg-blue-500/10 p-4 text-sm text-blue-100">
+          {t("orders.digitalWait")}
+        </div>
+      )}
 
       <div className="mt-8 space-y-3">
         {order.items.map((item) => (

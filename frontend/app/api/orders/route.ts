@@ -17,6 +17,11 @@ const checkoutSchema = z.object({
   paymentMethod: z.enum(["COD", "BALANCE"]).default("COD"),
 });
 
+// Digital orders need no delivery details and are always paid from the balance.
+const digitalCheckoutSchema = z.object({
+  notes: z.string().trim().max(500).optional().or(z.literal("")),
+});
+
 class OrderError extends Error {}
 
 export async function POST(request: Request) {
@@ -28,14 +33,48 @@ export async function POST(request: Request) {
   }
 
   const payload = await request.json().catch(() => null);
-  const parsed = checkoutSchema.safeParse(payload);
-  if (!parsed.success) {
-    return NextResponse.json({ error: t("err.delivery") }, { status: 400 });
-  }
 
   const cart = await getCart();
   if (!cart) {
     return NextResponse.json({ error: t("err.cartEmpty") }, { status: 400 });
+  }
+
+  // Decide the checkout rules from what is in the cart.
+  const peek = await prisma.cartItem.findMany({
+    where: { cartId: cart.id },
+    include: { product: { select: { category: true } } },
+  });
+  if (peek.length === 0) {
+    return NextResponse.json({ error: t("err.cartEmpty") }, { status: 400 });
+  }
+  const digitalOnly = peek.every((item) => item.product.category === "digital");
+
+  let paymentMethod: "COD" | "BALANCE";
+  let fullName: string;
+  let phone: string;
+  let address: string;
+  let city: string;
+  let notes: string | null;
+
+  if (digitalOnly) {
+    const parsed = digitalCheckoutSchema.safeParse(payload ?? {});
+    paymentMethod = "BALANCE"; // digital products are delivered, never COD
+    fullName = session.user?.name?.trim() || "Digital order";
+    phone = "";
+    address = "";
+    city = "";
+    notes = parsed.success ? parsed.data.notes || null : null;
+  } else {
+    const parsed = checkoutSchema.safeParse(payload);
+    if (!parsed.success) {
+      return NextResponse.json({ error: t("err.delivery") }, { status: 400 });
+    }
+    paymentMethod = parsed.data.paymentMethod;
+    fullName = parsed.data.fullName;
+    phone = parsed.data.phone;
+    address = parsed.data.address;
+    city = parsed.data.city;
+    notes = parsed.data.notes || null;
   }
 
   try {
@@ -80,21 +119,21 @@ export async function POST(request: Request) {
       const created = await tx.order.create({
         data: {
           userId,
-          status: parsed.data.paymentMethod === "BALANCE" ? "PAID" : "PENDING",
-          paymentMethod: parsed.data.paymentMethod,
+          status: paymentMethod === "BALANCE" ? "PAID" : "PENDING",
+          paymentMethod,
           total,
           currency: PRICING_CURRENCY.store,
-          fullName: parsed.data.fullName,
-          phone: parsed.data.phone,
-          address: parsed.data.address,
-          city: parsed.data.city,
-          notes: parsed.data.notes || null,
+          fullName,
+          phone,
+          address,
+          city,
+          notes,
           items: { create: orderItems },
         },
         select: { id: true },
       });
 
-      if (parsed.data.paymentMethod === "BALANCE") {
+      if (paymentMethod === "BALANCE") {
         await debitWallet(tx, {
           userId,
           currency: PRICING_CURRENCY.store,
@@ -112,13 +151,13 @@ export async function POST(request: Request) {
     revalidatePath("/", "layout");
     revalidatePath("/cart");
     revalidatePath("/store");
-    return NextResponse.json({ order }, { status: 201 });
+    return NextResponse.json({ order, digital: digitalOnly }, { status: 201 });
   } catch (error) {
-    const message = error instanceof OrderError
-      ? error.message
-      : error instanceof InsufficientBalanceError
-        ? t("err.balance")
-        : t("err.orderFailed");
+    // Not enough balance: tell the client to send the customer to top-up.
+    if (error instanceof InsufficientBalanceError) {
+      return NextResponse.json({ error: t("err.balance"), topUp: true }, { status: 402 });
+    }
+    const message = error instanceof OrderError ? error.message : t("err.orderFailed");
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }

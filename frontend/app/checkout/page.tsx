@@ -22,6 +22,7 @@ export default async function CheckoutPage() {
 
   const total = sumLines(items.map((item) => ({ unitPrice: item.product.price, quantity: item.quantity })));
   const [wallet, { t }] = await Promise.all([getWallet(session.user.id, PRICING_CURRENCY.store), getT()]);
+  const digitalOnly = items.every((item) => item.product.category === "digital");
 
   return (
     <main className="mx-auto w-full max-w-2xl px-4 sm:px-6 py-6 md:py-12">
@@ -42,6 +43,7 @@ export default async function CheckoutPage() {
           walletBalance={wallet.balance.toFixed(2)}
           canPayWithBalance={wallet.balance.gte(total)}
           currency={wallet.currency}
+          digitalOnly={digitalOnly}
         />
       </div>
     </main>

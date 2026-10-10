@@ -64,18 +64,17 @@ export default async function NewProductPage({
               htmlFor="slug"
               className="mb-1 block text-sm font-medium text-gray-700"
             >
-              Slug
+              Slug <span className="font-normal text-gray-400">(optional)</span>
             </label>
             <input
               id="slug"
               type="text"
               name="slug"
-              required
               placeholder="e.g. umt-dongle-box"
               className="w-full rounded-lg border border-gray-300 p-3 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
             <p className="mt-1 text-xs text-gray-400">
-              Used in the product URL. Lowercase, no spaces (use dashes).
+              Leave empty to generate it from the product name automatically.
             </p>
           </div>
 

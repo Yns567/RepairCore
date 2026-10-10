@@ -10,16 +10,26 @@ import { requireAdmin } from "@/lib/authorization";
 import { prisma } from "@/lib/prisma";
 
 const productSchema = z.object({
-  name: z.string().trim().min(2).max(160),
-  slug: z.string().trim().toLowerCase().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(180),
-  description: z.string().trim().max(3000).optional(),
-  price: z.coerce.number().finite().min(0),
-  stock: z.coerce.number().int().min(0).max(100000),
+  name: z.string().trim().min(2, "Enter a product name (at least 2 characters).").max(160, "The product name is too long."),
+  slug: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "The URL slug could not be generated — enter one using lowercase letters, numbers and dashes.").max(180),
+  description: z.string().trim().max(3000, "The description is too long.").optional(),
+  price: z.coerce.number({ message: "Enter the price as a number." }).finite("Enter the price as a number.").min(0, "The price cannot be negative."),
+  stock: z.coerce.number({ message: "Enter the stock as a whole number." }).int("Enter the stock as a whole number.").min(0).max(100000),
   category: z.string().trim().max(80).optional(),
   brand: z.string().trim().max(80).optional(),
   partNumber: z.string().trim().max(100).optional(),
   deliveryTime: z.string().trim().min(1).max(60).optional(),
 });
+
+/** Turns any text into a URL-safe slug; returns "" when nothing usable remains. */
+function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 180);
+}
 
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 const IMAGE_FIELD_NAMES = ["image", "image2", "image3"] as const;
@@ -47,9 +57,16 @@ type StoredImageSlots = [
 ];
 
 function readProductForm(formData: FormData) {
+  // The slug is normalized (and derived from the name when left blank) so the
+  // admin never has to hand-craft a valid slug.
+  const rawName = String(formData.get("name") ?? "");
+  const rawSlug = String(formData.get("slug") ?? "");
+  let slug = slugify(rawSlug) || slugify(rawName);
+  if (!slug) slug = `product-${Date.now()}`;
+
   const parsed = productSchema.safeParse({
     name: formData.get("name"),
-    slug: formData.get("slug"),
+    slug,
     description: formData.get("description") || undefined,
     price: formData.get("price"),
     stock: formData.get("stock") || 0,
@@ -60,7 +77,8 @@ function readProductForm(formData: FormData) {
   });
 
   if (!parsed.success) {
-    throw new Error("Please provide valid product details.");
+    const message = parsed.error.issues.map((issue) => issue.message).filter(Boolean).join(" · ");
+    throw new Error(message || "Please check the product details.");
   }
 
   return parsed.data;
@@ -320,6 +338,12 @@ export async function createProduct(formData: FormData) {
 
   try {
     const data = readProductForm(formData);
+    // Auto-generated slugs can collide (e.g. two products with the same name),
+    // so make it unique before inserting.
+    const baseSlug = data.slug;
+    for (let n = 2; await prisma.product.findUnique({ where: { slug: data.slug }, select: { id: true } }); n += 1) {
+      data.slug = `${baseSlug}-${n}`;
+    }
     const savedImages = await saveProductImages(formData);
     const images = compactImageSlots(savedImages);
 

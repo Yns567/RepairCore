@@ -34,6 +34,9 @@ model Product {
 
   partNumber String?
 
+  // Admin-entered delivery estimate shown on the price list (free text, like a service's time).
+  deliveryTime String @default("24-48h")
+
   status String @default("ACTIVE")
 
   createdAt DateTime @default(now())

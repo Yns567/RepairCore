@@ -22,9 +22,9 @@ export default async function Footer() {
         <div>
           <h2 className="text-sm font-bold uppercase tracking-wider text-white">{t("footer.shop")}</h2>
           <div className="mt-3 grid gap-2 text-sm">
-            <Link href="/store?category=programmers" className="hover:text-blue-400">{t("nav.programmers")}</Link>
+            <Link href="/store" className="hover:text-blue-400">{t("nav.allProducts")}</Link>
+            <Link href="/price-list" className="hover:text-blue-400">{t("list.title")}</Link>
             <Link href="/store?category=boxes" className="hover:text-blue-400">{t("nav.boxesDongles")}</Link>
-            <Link href="/store?category=tools" className="hover:text-blue-400">{t("nav.repairTools")}</Link>
             <Link href="/software" className="hover:text-blue-400">{t("footer.software")}</Link>
           </div>
         </div>

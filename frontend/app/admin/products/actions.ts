@@ -18,6 +18,7 @@ const productSchema = z.object({
   category: z.string().trim().max(80).optional(),
   brand: z.string().trim().max(80).optional(),
   partNumber: z.string().trim().max(100).optional(),
+  deliveryTime: z.string().trim().min(1).max(60).optional(),
 });
 
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
@@ -55,6 +56,7 @@ function readProductForm(formData: FormData) {
     category: formData.get("category") || undefined,
     brand: formData.get("brand") || undefined,
     partNumber: formData.get("partNumber") || undefined,
+    deliveryTime: formData.get("deliveryTime") || undefined,
   });
 
   if (!parsed.success) {

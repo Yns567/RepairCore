@@ -24,7 +24,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
         <Field label="URL slug"><input required name="slug" defaultValue={product.slug} className="field" /></Field>
         <Field label="Description"><textarea name="description" defaultValue={product.description ?? ""} rows={5} className="field" /></Field>
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="Price ($)"><input required name="price" type="number" min="0" step="0.01" defaultValue={product.price.toString()} className="field" /></Field>
+          <Field label="Price (MAD)"><input required name="price" type="number" min="0" step="0.01" defaultValue={product.price.toString()} className="field" /></Field>
           <Field label="Stock"><input required name="stock" type="number" min="0" step="1" defaultValue={product.stock} className="field" /></Field>
         </div>
         <div className="grid gap-5 sm:grid-cols-2">
@@ -41,7 +41,10 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           </Field>
           <Field label="Brand"><input name="brand" defaultValue={product.brand ?? ""} className="field" /></Field>
         </div>
-        <Field label="Part number"><input name="partNumber" defaultValue={product.partNumber ?? ""} className="field" /></Field>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="Part number"><input name="partNumber" defaultValue={product.partNumber ?? ""} className="field" /></Field>
+          <Field label="Delivery time"><input name="deliveryTime" defaultValue={product.deliveryTime} maxLength={60} placeholder="24-48h" className="field" /></Field>
+        </div>
         <ProductImageFields
           currentImages={[product.image, product.image2, product.image3]}
           productName={product.name}

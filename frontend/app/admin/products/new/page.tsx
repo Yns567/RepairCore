@@ -96,7 +96,7 @@ export default function NewProductPage() {
                 htmlFor="price"
                 className="mb-1 block text-sm font-medium text-gray-700"
               >
-                Price ($)
+                Price (MAD)
               </label>
               <input
                 id="price"
@@ -187,6 +187,21 @@ export default function NewProductPage() {
               type="text"
               name="partNumber"
               placeholder="e.g. UMT-2024-A"
+              className="w-full rounded-lg border border-gray-300 p-3 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="deliveryTime" className="mb-1 block text-sm font-medium text-gray-700">
+              Delivery time
+            </label>
+            <input
+              id="deliveryTime"
+              type="text"
+              name="deliveryTime"
+              defaultValue="24-48h"
+              maxLength={60}
+              placeholder="e.g. 24-48h, 2-3 days"
               className="w-full rounded-lg border border-gray-300 p-3 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>

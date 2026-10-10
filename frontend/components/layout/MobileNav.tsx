@@ -31,6 +31,7 @@ const quickLinks: { href: string; label: MessageKey; icon: typeof CircleUserRoun
 
 const shopLinks: NavLink[] = [
   { href: "/store", label: "nav.allProducts" },
+  { href: "/price-list", label: "list.title" },
   { href: "/store?category=programmers", label: "nav.programmers" },
   { href: "/store?category=boxes", label: "nav.boxesDongles" },
   { href: "/store?category=tools", label: "nav.repairTools" },
@@ -64,13 +65,11 @@ const legalLinks: NavLink[] = [
 export default function MobileNav() {
   const { t } = useT();
   const [isOpen, setIsOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   // The drawer is rendered into <body> via a portal, because this component
   // lives inside the header, whose backdrop-blur would otherwise trap the
   // fixed overlay inside the header's box instead of covering the viewport.
-  useEffect(() => setMounted(true), []);
-
+  // It only ever opens on a client click, so the portal never runs during SSR.
   useEffect(() => {
     if (!isOpen) return;
 
@@ -102,7 +101,7 @@ export default function MobileNav() {
         <Menu size={24} />
       </button>
 
-      {isOpen && mounted && createPortal(
+      {isOpen && typeof document !== "undefined" && createPortal(
         <div
           className="fixed inset-0 z-[70] bg-slate-950/75 backdrop-blur-sm md:hidden"
           role="presentation"

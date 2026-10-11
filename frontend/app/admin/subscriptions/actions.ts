@@ -1,13 +1,67 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { requireAdmin } from "@/lib/authorization";
+import { emailHtml, notify, siteUrl } from "@/lib/email";
 import { PRICING_CURRENCY } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { creditWallet } from "@/lib/wallet";
 
 const validStatuses = new Set(["PENDING", "ACTIVE", "CANCELLED", "EXPIRED"]);
 const periodToDays: Record<string, number> = { MONTHLY: 30, YEARLY: 365, RENTAL_DAY: 1, RENTAL_WEEK: 7 };
+
+const deliverSchema = z.object({
+  id: z.coerce.number().int().positive(),
+  deliveryNote: z.string().trim().min(1, "Enter the activation code or details.").max(4000),
+});
+
+/** Saves the activation details, activates the subscription and emails the customer. */
+export async function deliverSubscription(formData: FormData) {
+  const session = await requireAdmin();
+  const adminId = session?.user?.id;
+  const parsed = deliverSchema.safeParse({ id: formData.get("id"), deliveryNote: formData.get("deliveryNote") });
+  if (!parsed.success) throw new Error(parsed.error.issues[0]?.message ?? "Invalid delivery.");
+  const { id, deliveryNote } = parsed.data;
+
+  const subscription = await prisma.subscription.findUnique({
+    where: { id },
+    include: { plan: true, user: { select: { email: true } } },
+  });
+  if (!subscription) throw new Error("Subscription not found.");
+  if (subscription.status === "CANCELLED") throw new Error("This subscription was cancelled.");
+
+  const now = new Date();
+  // Delivering the activation also starts the subscription period if still pending.
+  const activate = subscription.status === "PENDING";
+  await prisma.subscription.update({
+    where: { id },
+    data: {
+      deliveryNote,
+      ...(activate
+        ? {
+            status: "ACTIVE",
+            startDate: now,
+            endDate: new Date(now.getTime() + (periodToDays[subscription.plan.billingPeriod] ?? 30) * 86_400_000),
+          }
+        : {}),
+    },
+  });
+
+  await notify({
+    to: subscription.user.email,
+    subject: `Your ${subscription.plan.name} is ready`,
+    text: `Your ${subscription.plan.name} subscription is active.\n\n${deliveryNote}\n\n${siteUrl()}/account/subscriptions`,
+    html: emailHtml(
+      [`Your ${subscription.plan.name} subscription is active. Your activation details:`, deliveryNote],
+      { label: "View my subscriptions", url: `${siteUrl()}/account/subscriptions` },
+    ),
+  });
+
+  void adminId;
+  revalidatePath("/admin/subscriptions");
+  revalidatePath("/account/subscriptions");
+}
 
 export async function updateSubscriptionStatus(subscriptionId: number, status: string) {
   const session = await requireAdmin();

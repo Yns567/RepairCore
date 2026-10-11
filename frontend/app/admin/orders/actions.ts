@@ -1,12 +1,47 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import type { Prisma } from "@/lib/generated/prisma";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/authorization";
 import { emailHtml, notify, siteUrl } from "@/lib/email";
 import { formatMoney, isCurrency } from "@/lib/money";
 import { creditWallet } from "@/lib/wallet";
+
+const deliverOrderSchema = z.object({
+  id: z.coerce.number().int().positive(),
+  deliveryNote: z.string().trim().max(4000),
+});
+
+/** Saves a delivery message/code for an order and emails it to the customer. */
+export async function deliverOrder(formData: FormData) {
+  await requireAdmin();
+  const parsed = deliverOrderSchema.safeParse({ id: formData.get("id"), deliveryNote: formData.get("deliveryNote") });
+  if (!parsed.success) throw new Error("Invalid delivery.");
+  const { id, deliveryNote } = parsed.data;
+
+  const order = await prisma.order.findUnique({ where: { id }, select: { user: { select: { email: true } } } });
+  if (!order) throw new Error("Order not found.");
+
+  await prisma.order.update({ where: { id }, data: { deliveryNote: deliveryNote || null } });
+
+  if (deliveryNote) {
+    await notify({
+      to: order.user.email,
+      subject: `Your order #${id} is ready`,
+      text: `Your digital product for order #${id}:\n\n${deliveryNote}\n\n${siteUrl()}/orders/${id}`,
+      html: emailHtml(
+        [`Your digital product for order #${id} is ready. Your details:`, deliveryNote],
+        { label: "View order", url: `${siteUrl()}/orders/${id}` },
+      ),
+    });
+  }
+
+  revalidatePath(`/admin/orders/${id}`);
+  revalidatePath("/admin/orders");
+  revalidatePath(`/orders/${id}`);
+}
 
 const statusLabels: Record<string, string> = {
   PENDING: "pending",

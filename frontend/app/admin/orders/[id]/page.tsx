@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { deliverOrder } from "../actions";
 import OrderStatusSelect from "./OrderStatusSelect";
 
 export default async function AdminOrderDetailPage({
@@ -85,10 +86,31 @@ export default async function AdminOrderDetailPage({
 
         <div className="flex justify-end border-t p-4">
           <span className="text-lg font-bold text-gray-900">
-            Total: {order.total.toString()} $
+            Total: {order.total.toFixed(2)} {order.currency}
           </span>
         </div>
       </div>
+
+      <form action={deliverOrder} className="mt-6 rounded-xl border bg-white p-5 shadow-sm">
+        <input type="hidden" name="id" value={order.id} />
+        <h2 className="font-semibold text-gray-900">Digital delivery</h2>
+        <p className="mt-1 text-xs text-gray-500">
+          For digital products: enter the activation code or details. Saving emails it to the customer and shows it on their order page.
+        </p>
+        <textarea
+          name="deliveryNote"
+          defaultValue={order.deliveryNote ?? ""}
+          rows={3}
+          placeholder="e.g. License key: XXXX-XXXX-XXXX"
+          className="mt-3 w-full rounded-lg border border-gray-300 p-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none"
+        />
+        <div className="mt-2 flex items-center gap-3">
+          <button className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+            Save &amp; email customer
+          </button>
+          {order.deliveryNote && <span className="text-xs text-emerald-600">✓ Delivered</span>}
+        </div>
+      </form>
     </div>
   );
 }

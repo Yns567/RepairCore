@@ -43,9 +43,16 @@ export default async function OrderConfirmationPage({
         </p>
       </div>
 
-      {!cancelled && digitalOnly && (
+      {!cancelled && digitalOnly && !order.deliveryNote && (
         <div className="mt-4 rounded-xl border border-blue-500/30 bg-blue-500/10 p-4 text-sm text-blue-100">
           {t("orders.digitalWait")}
+        </div>
+      )}
+
+      {order.deliveryNote && (
+        <div className="mt-4 rounded-xl border border-blue-500/30 bg-blue-500/10 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-blue-300">{t("orders.delivery")}</p>
+          <p className="mt-2 whitespace-pre-wrap break-words font-mono text-sm text-white select-all">{order.deliveryNote}</p>
         </div>
       )}
 

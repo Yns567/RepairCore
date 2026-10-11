@@ -36,21 +36,26 @@ export default async function MySubscriptionsPage() {
                 ? t("status.pendingActivation")
                 : sub.status === "CANCELLED" ? t("status.CANCELLED") : t("status.EXPIRED");
             return (
-              <div
-                key={sub.id}
-                className="flex items-center justify-between rounded-2xl border border-slate-800 bg-[#111827] p-6"
-              >
-                <div>
-                  <p className="font-semibold text-white">{sub.plan.softwareName} · {sub.plan.name}</p>
-                  <p className="mt-1 text-sm text-slate-400">{t("subs.expires", { date: formatDay(sub.endDate) })}</p>
+              <div key={sub.id} className="rounded-2xl border border-slate-800 bg-[#111827] p-6">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="font-semibold text-white">{sub.plan.softwareName} · {sub.plan.name}</p>
+                    <p className="mt-1 text-sm text-slate-400">{t("subs.expires", { date: formatDay(sub.endDate) })}</p>
+                  </div>
+                  <span
+                    className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold text-white ${
+                      isActive ? "bg-green-600" : isPending ? "bg-amber-600" : "bg-red-600"
+                    }`}
+                  >
+                    {label}
+                  </span>
                 </div>
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold text-white ${
-                    isActive ? "bg-green-600" : isPending ? "bg-amber-600" : "bg-red-600"
-                  }`}
-                >
-                  {label}
-                </span>
+                {sub.deliveryNote && (
+                  <div className="mt-4 rounded-xl border border-blue-500/30 bg-blue-500/10 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-blue-300">{t("subs.activation")}</p>
+                    <p className="mt-2 whitespace-pre-wrap break-words font-mono text-sm text-white select-all">{sub.deliveryNote}</p>
+                  </div>
+                )}
               </div>
             );
           })}

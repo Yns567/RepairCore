@@ -10,7 +10,7 @@ const statusStyles: Record<string, string> = {
 };
 
 function currency(value: number) {
-  return `${value.toLocaleString("en-US", { maximumFractionDigits: 2 })} $`;
+  return `${value.toLocaleString("en-US", { maximumFractionDigits: 2 })} MAD`;
 }
 
 export default async function AdminDashboardPage() {
@@ -78,6 +78,22 @@ export default async function AdminDashboardPage() {
       take: 5,
     }),
   ]);
+
+  // Things that need the admin to act, for the "needs attention" panel.
+  const [pendingTopUps, pendingSubscriptions, paidOrders, openServiceOrders] = await Promise.all([
+    prisma.topUpRequest.count({ where: { status: "PENDING" } }),
+    prisma.subscription.count({ where: { status: "PENDING" } }),
+    prisma.order.count({ where: { status: "PAID" } }),
+    prisma.gsmServiceOrder.count({ where: { status: { in: ["PENDING", "PROCESSING"] } } }),
+  ]);
+
+  const attention = [
+    { label: "Top-up requests", count: pendingTopUps, href: "/admin/top-ups", hint: "Verify the receipt and credit the customer" },
+    { label: "Subscriptions to deliver", count: pendingSubscriptions, href: "/admin/subscriptions", hint: "Send the activation code and activate" },
+    { label: "Paid orders to fulfil", count: paidOrders, href: "/admin/orders", hint: "Deliver digital codes or ship products" },
+    { label: "Service orders open", count: openServiceOrders, href: "/admin/service-orders", hint: "Process and send the result" },
+  ];
+  const totalAttention = attention.reduce((sum, item) => sum + item.count, 0);
 
   const pendingOrdersCount = pendingCount;
 
@@ -160,6 +176,31 @@ export default async function AdminDashboardPage() {
         <p className="mt-1 text-sm text-gray-500">
           Store performance at a glance.
         </p>
+      </div>
+
+      {/* Needs attention */}
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold text-gray-900">Needs attention</h2>
+          {totalAttention === 0 && <span className="text-sm text-emerald-600">All caught up ✓</span>}
+        </div>
+        <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {attention.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`rounded-xl border p-4 transition ${
+                item.count > 0
+                  ? "border-amber-300 bg-amber-50 hover:bg-amber-100"
+                  : "border-gray-200 bg-gray-50 hover:bg-gray-100"
+              }`}
+            >
+              <p className={`text-3xl font-bold ${item.count > 0 ? "text-amber-700" : "text-gray-400"}`}>{item.count}</p>
+              <p className="mt-1 text-sm font-medium text-gray-800">{item.label}</p>
+              <p className="mt-1 text-xs text-gray-500">{item.hint}</p>
+            </Link>
+          ))}
+        </div>
       </div>
 
       {/* Revenue stat cards */}

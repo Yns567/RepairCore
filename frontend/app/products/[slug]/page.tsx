@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Banknote, Check, ChevronRight, Headset, Truck } from "lucide-react";
+import { Banknote, Check, ChevronRight, Clock3, Headset, Sparkles, Truck } from "lucide-react";
 import { notFound } from "next/navigation";
 import ProductPurchase from "@/components/cart/ProductPurchase";
 import ProductCard from "@/components/store/ProductCard";
@@ -34,6 +34,7 @@ export default async function ProductPage({ params }: PageProps) {
   ]);
 
   const isAvailable = product.status === "ACTIVE" && product.stock > 0;
+  const isDigital = product.category === "digital";
   const productImages = [product.image, product.image2, product.image3].filter(
     (image): image is string => Boolean(image),
   );
@@ -77,11 +78,21 @@ export default async function ProductPage({ params }: PageProps) {
               </span>
             </div>
 
+            <div className="mt-3 flex items-center gap-2 text-sm text-slate-400">
+              <Clock3 size={15} className="text-blue-400" />
+              <span>{t("product.deliveryTime")}:</span>
+              <span dir="auto" className="font-semibold text-white">{product.deliveryTime}</span>
+            </div>
+
             <ProductPurchase productId={product.id} stock={isAvailable ? product.stock : 0} />
 
             <div className="mt-5 grid grid-cols-3 gap-2 rounded-xl border border-slate-800 bg-[#0b1220] p-3 text-[11px] text-slate-300 sm:text-xs">
-              <Info icon={Truck} text={t("product.shipping")} />
-              <Info icon={Banknote} text={t("product.payment")} />
+              {isDigital ? (
+                <Info icon={Sparkles} text={t("product.digitalDelivery")} />
+              ) : (
+                <Info icon={Truck} text={t("product.shipping")} />
+              )}
+              <Info icon={Banknote} text={isDigital ? t("product.digitalPayment") : t("product.payment")} />
               <Info icon={Headset} text={t("product.support")} />
             </div>
 

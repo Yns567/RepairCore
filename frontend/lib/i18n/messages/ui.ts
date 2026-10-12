@@ -2,7 +2,7 @@ import { defineMessages } from "../define";
 
 export const ui = defineMessages(
   {
-    "top.delivery": "Delivery across Morocco · Cash on delivery",
+    "top.delivery": "Fast delivery · Secure payment · WhatsApp support",
     "top.register": "Register",
     "top.balance": "My balance",
     "nav.homeShort": "Home",
@@ -41,7 +41,7 @@ export const ui = defineMessages(
   },
   {
     ar: {
-      "top.delivery": "توصيل لكل مدن المغرب · الدفع عند الاستلام",
+      "top.delivery": "تسليم سريع · دفع آمن · دعم على واتساب",
       "top.register": "حساب جديد",
       "top.balance": "رصيدي",
       "nav.homeShort": "الرئيسية",
@@ -79,7 +79,7 @@ export const ui = defineMessages(
       "list.search": "ابحث في المنتجات...",
     },
     fr: {
-      "top.delivery": "Livraison partout au Maroc · Paiement à la livraison",
+      "top.delivery": "Livraison rapide · Paiement sécurisé · Support WhatsApp",
       "top.register": "Inscription",
       "top.balance": "Mon solde",
       "nav.homeShort": "Accueil",

@@ -1,11 +1,11 @@
-import { PackageCheck, KeySquare, GraduationCap } from "lucide-react";
+import { Headset, ShieldCheck, Zap } from "lucide-react";
 import { getT } from "@/lib/i18n/server";
 import type { MessageKey } from "@/lib/i18n/messages";
 
-const points: { icon: typeof PackageCheck; title: MessageKey; description: MessageKey }[] = [
-  { icon: PackageCheck, title: "why.partsTitle", description: "why.partsText" },
-  { icon: KeySquare, title: "why.softwareTitle", description: "why.softwareText" },
-  { icon: GraduationCap, title: "why.learnTitle", description: "why.learnText" },
+const points: { icon: typeof Zap; title: MessageKey; description: MessageKey }[] = [
+  { icon: Zap, title: "why.partsTitle", description: "why.partsText" },
+  { icon: ShieldCheck, title: "why.softwareTitle", description: "why.softwareText" },
+  { icon: Headset, title: "why.learnTitle", description: "why.learnText" },
 ];
 
 export default async function WhyUs() {

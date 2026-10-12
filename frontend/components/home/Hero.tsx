@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Wrench, ShieldCheck, Truck, Headset } from "lucide-react";
+import { Wrench, ShieldCheck, Zap, MessageCircle } from "lucide-react";
 import { getT } from "@/lib/i18n/server";
 
 export default async function Hero() {
@@ -54,8 +54,8 @@ export default async function Hero() {
 
           <div className="mt-6 grid grid-cols-3 gap-2 border-t border-slate-800 pt-4 text-slate-400 md:mt-10 md:gap-6 md:pt-6">
             <TrustItem icon={<ShieldCheck size={18} />} label={t("hero.verified")} />
-            <TrustItem icon={<Truck size={18} />} label={t("hero.dispatch")} />
-            <TrustItem icon={<Headset size={18} />} label={t("hero.support")} />
+            <TrustItem icon={<Zap size={18} />} label={t("hero.dispatch")} />
+            <TrustItem icon={<MessageCircle size={18} />} label={t("hero.support")} />
           </div>
         </div>
 

@@ -26,6 +26,7 @@ export default async function Footer() {
             <Link href="/price-list" className="hover:text-blue-400">{t("list.title")}</Link>
             <Link href="/store?category=boxes" className="hover:text-blue-400">{t("nav.boxesDongles")}</Link>
             <Link href="/software" className="hover:text-blue-400">{t("footer.software")}</Link>
+            <Link href="/rewards" className="hover:text-blue-400">{t("loyalty.nav")}</Link>
           </div>
         </div>
 

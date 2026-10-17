@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { gsmCategoryKey } from "@/lib/gsm-services";
 import { getT } from "@/lib/i18n/server";
 import ServiceOrderForm from "@/components/services/ServiceOrderForm";
+import CashbackHint from "@/components/loyalty/CashbackHint";
 
 export default async function ServiceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -54,6 +55,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
               </div>
               {service.provider && <p dir="auto" className="text-xs text-slate-400">{service.provider}</p>}
             </div>
+            <CashbackHint price={service.price.toString()} currency="USD" />
             <div className="mt-4">
               <ServiceOrderForm serviceId={service.id} slug={service.slug} inputType={service.inputType} price={service.price.toString()} />
             </div>

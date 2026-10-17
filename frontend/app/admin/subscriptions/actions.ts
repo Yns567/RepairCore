@@ -5,11 +5,32 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/authorization";
 import { emailHtml, notify, siteUrl } from "@/lib/email";
 import { PRICING_CURRENCY } from "@/lib/money";
+import type { Prisma } from "@/lib/generated/prisma";
+import { awardCashback } from "@/lib/loyalty";
 import { prisma } from "@/lib/prisma";
 import { creditWallet } from "@/lib/wallet";
 
 const validStatuses = new Set(["PENDING", "ACTIVE", "CANCELLED", "EXPIRED"]);
 const periodToDays: Record<string, number> = { MONTHLY: 30, YEARLY: 365, RENTAL_DAY: 1, RENTAL_WEEK: 7 };
+
+/** Pays the loyalty cashback when a paid subscription request is activated. */
+async function rewardSubscription(
+  tx: Prisma.TransactionClient,
+  subscription: { id: number; userId: string; plan: { name: string } },
+) {
+  const payment = await tx.walletTransaction.findFirst({
+    where: { referenceType: "SUBSCRIPTION", referenceId: String(subscription.id), type: "DEBIT" },
+  });
+  if (!payment) return;
+  await awardCashback(tx, {
+    userId: subscription.userId,
+    sourceType: "SUBSCRIPTION",
+    sourceId: subscription.id,
+    currency: PRICING_CURRENCY.subscription,
+    amount: payment.amount,
+    label: `${subscription.plan.name} subscription`,
+  });
+}
 
 const deliverSchema = z.object({
   id: z.coerce.number().int().positive(),
@@ -34,18 +55,21 @@ export async function deliverSubscription(formData: FormData) {
   const now = new Date();
   // Delivering the activation also starts the subscription period if still pending.
   const activate = subscription.status === "PENDING";
-  await prisma.subscription.update({
-    where: { id },
-    data: {
-      deliveryNote,
-      ...(activate
-        ? {
-            status: "ACTIVE",
-            startDate: now,
-            endDate: new Date(now.getTime() + (periodToDays[subscription.plan.billingPeriod] ?? 30) * 86_400_000),
-          }
-        : {}),
-    },
+  await prisma.$transaction(async (tx) => {
+    await tx.subscription.update({
+      where: { id },
+      data: {
+        deliveryNote,
+        ...(activate
+          ? {
+              status: "ACTIVE",
+              startDate: now,
+              endDate: new Date(now.getTime() + (periodToDays[subscription.plan.billingPeriod] ?? 30) * 86_400_000),
+            }
+          : {}),
+      },
+    });
+    if (activate) await rewardSubscription(tx, subscription);
   });
 
   await notify({
@@ -61,6 +85,7 @@ export async function deliverSubscription(formData: FormData) {
   void adminId;
   revalidatePath("/admin/subscriptions");
   revalidatePath("/account/subscriptions");
+  revalidatePath("/account/wallet");
 }
 
 export async function updateSubscriptionStatus(subscriptionId: number, status: string) {
@@ -95,6 +120,10 @@ export async function updateSubscriptionStatus(subscriptionId: number, status: s
       data,
     });
     if (claim.count !== 1) throw new Error("The subscription changed meanwhile. Please retry.");
+
+    if (subscription.status === "PENDING" && status === "ACTIVE") {
+      await rewardSubscription(tx, subscription);
+    }
 
     // Rejecting a request that was never activated returns what the customer paid.
     // Active subscriptions are not refunded automatically.

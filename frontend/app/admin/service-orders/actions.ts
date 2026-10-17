@@ -6,6 +6,7 @@ import { requireAdmin } from "@/lib/authorization";
 import { prisma } from "@/lib/prisma";
 import { emailHtml, notify, siteUrl } from "@/lib/email";
 import { formatMoney, isCurrency } from "@/lib/money";
+import { awardCashback, reverseCashback } from "@/lib/loyalty";
 import { creditWallet } from "@/lib/wallet";
 
 const refundableStatuses = new Set(["REJECTED", "CANCELLED"]);
@@ -83,6 +84,12 @@ export async function updateGsmServiceOrder(formData: FormData) {
           referenceId: String(order.id),
           createdById: adminId,
         });
+        await reverseCashback(tx, {
+          sourceType: "GSM_SERVICE_ORDER",
+          sourceId: order.id,
+          label: `GSM order #${order.id}`,
+          createdById: adminId,
+        });
         return;
       }
 
@@ -110,6 +117,17 @@ export async function updateGsmServiceOrder(formData: FormData) {
     });
     if (update.count !== 1) {
       throw new Error("This order was refunded and can no longer return to a non-refunded status.");
+    }
+
+    if (status === "COMPLETED") {
+      await awardCashback(tx, {
+        userId: order.userId,
+        sourceType: "GSM_SERVICE_ORDER",
+        sourceId: order.id,
+        currency: order.currency,
+        amount: order.price,
+        label: `GSM order #${order.id}: ${order.service.name}`,
+      });
     }
   });
 

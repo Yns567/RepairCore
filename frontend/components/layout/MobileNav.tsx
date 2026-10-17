@@ -6,6 +6,7 @@ import Link from "next/link";
 import {
   ChevronRight,
   CircleUserRound,
+  Gift,
   GraduationCap,
   Grid2X2,
   LayoutGrid,
@@ -27,6 +28,7 @@ const quickLinks: { href: string; label: MessageKey; icon: typeof CircleUserRoun
   { href: "/account", label: "nav.account", icon: CircleUserRound },
   { href: "/orders", label: "nav.orders", icon: Package },
   { href: "/account/wallet", label: "nav.wallet", icon: Wallet },
+  { href: "/rewards", label: "loyalty.nav", icon: Gift },
 ];
 
 const shopLinks: NavLink[] = [
@@ -127,7 +129,7 @@ export default function MobileNav() {
             </div>
 
             {/* Quick-access cards */}
-            <div className="grid grid-cols-3 gap-2 px-5 pt-4">
+            <div className="grid grid-cols-4 gap-2 px-5 pt-4">
               {quickLinks.map(({ href, label, icon: Icon }) => (
                 <Link
                   key={href}

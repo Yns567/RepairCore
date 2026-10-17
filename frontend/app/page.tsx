@@ -3,6 +3,7 @@ import Categories from "@/components/home/Categories";
 import PopularServices from "@/components/home/PopularServices";
 import TrendingProducts from "@/components/home/TrendingProducts";
 import WhyUs from "@/components/home/WhyUs";
+import LoyaltyBand from "@/components/home/LoyaltyBand";
 import CtaBand from "@/components/home/CtaBand";
 
 export default function HomePage() {
@@ -12,6 +13,7 @@ export default function HomePage() {
       <Categories />
       <PopularServices />
       <TrendingProducts />
+      <LoyaltyBand />
       <WhyUs />
       <CtaBand />
     </main>

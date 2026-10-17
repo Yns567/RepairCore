@@ -1,6 +1,7 @@
 import "server-only";
 
 import { emailHtml, notify, siteUrl } from "@/lib/email";
+import { awardCashback } from "@/lib/loyalty";
 import { formatMoney, PRICING_CURRENCY, toMoney } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { decryptSensitiveValue } from "@/lib/sensitive-data";
@@ -308,7 +309,7 @@ export async function refreshProviderOrders(where: { userId?: string } = {}, lim
     },
     orderBy: { lastCheckedAt: "asc" },
     take: limit,
-    select: { id: true, externalReference: true },
+    select: { id: true, externalReference: true, userId: true, price: true, currency: true },
   });
 
   for (const order of due) {
@@ -318,9 +319,22 @@ export async function refreshProviderOrders(where: { userId?: string } = {}, lim
       const code = (success?.[0]?.CODE ?? "").toString().replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").trim();
 
       if (status === 4) {
-        const done = await prisma.gsmServiceOrder.updateMany({
-          where: { id: order.id, status: "PROCESSING" },
-          data: { status: "COMPLETED", result: code.slice(0, 2000) || "Completed", lastCheckedAt: new Date() },
+        const done = await prisma.$transaction(async (tx) => {
+          const claim = await tx.gsmServiceOrder.updateMany({
+            where: { id: order.id, status: "PROCESSING" },
+            data: { status: "COMPLETED", result: code.slice(0, 2000) || "Completed", lastCheckedAt: new Date() },
+          });
+          if (claim.count === 1) {
+            await awardCashback(tx, {
+              userId: order.userId,
+              sourceType: "GSM_SERVICE_ORDER",
+              sourceId: order.id,
+              currency: order.currency,
+              amount: order.price,
+              label: `GSM order #${order.id}`,
+            });
+          }
+          return claim;
         });
         if (done.count === 1) await notifyCustomer(order.id);
       } else if (status === 3) {

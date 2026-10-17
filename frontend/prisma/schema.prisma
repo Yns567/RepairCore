@@ -110,6 +110,7 @@ model User {
   wallets          Wallet[]
   gsmServiceOrders GsmServiceOrder[]
   topUpRequests    TopUpRequest[]
+  loyaltyRewards   LoyaltyReward[]
 }
 
 model Account {
@@ -397,4 +398,25 @@ model Enrollment {
   createdAt DateTime @default(now())
 
   @@unique([userId, courseId])
+}
+
+// Cashback earned on a completed purchase (loyalty program). One row per purchase:
+// the unique source makes crediting idempotent even if a status is set twice.
+model LoyaltyReward {
+  id         Int       @id @default(autoincrement())
+  userId     String
+  sourceType String // ORDER | GSM_SERVICE_ORDER | SUBSCRIPTION
+  sourceId   String
+  currency   String // MAD | USD, same as the purchase
+  baseAmount Decimal // What the customer paid.
+  rate       Decimal // Cashback percent applied, e.g. 2 for 2%.
+  amount     Decimal // Cashback credited to the wallet.
+  points     Int // Level progress, in dirham equivalent.
+  reversedAt DateTime? // Set when the purchase was cancelled after completion.
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([sourceType, sourceId])
+  @@index([userId, createdAt])
 }

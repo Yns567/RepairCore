@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/authorization";
 import { emailHtml, notify, siteUrl } from "@/lib/email";
 import { formatMoney, isCurrency } from "@/lib/money";
+import { awardCashback, reverseCashback } from "@/lib/loyalty";
 import { creditWallet } from "@/lib/wallet";
 
 const deliverOrderSchema = z.object({
@@ -58,7 +59,7 @@ export async function updateOrderStatus(orderId: number, status: string) {
     throw new Error("Invalid order update.");
   }
 
-  const before = await prisma.$transaction(async (tx) => {
+  const { before, cashback } = await prisma.$transaction(async (tx) => {
     const order = await tx.order.findUnique({
       where: { id: orderId },
       include: { items: true, user: { select: { email: true } } },
@@ -66,15 +67,18 @@ export async function updateOrderStatus(orderId: number, status: string) {
     if (!order) {
       throw new Error("Order not found.");
     }
-    await applyStatusChange(tx, order, status, adminId);
-    return order;
+    const cashback = await applyStatusChange(tx, order, status, adminId);
+    return { before: order, cashback };
   });
 
   if (before.status !== status) {
     const refund = status === "CANCELLED" && before.paymentMethod === "BALANCE"
       ? ` ${formatMoney(before.total, before.currency)} was returned to your balance.`
       : "";
-    const line = `Your order #${orderId} is now ${statusLabels[status]}.${refund}`;
+    const reward = cashback?.gt(0)
+      ? ` You earned ${formatMoney(cashback, before.currency)} cashback in your balance.`
+      : "";
+    const line = `Your order #${orderId} is now ${statusLabels[status]}.${refund}${reward}`;
     await notify({
       to: before.user.email,
       subject: `Order #${orderId}: ${statusLabels[status]}`,
@@ -89,6 +93,7 @@ export async function updateOrderStatus(orderId: number, status: string) {
   revalidatePath("/orders");
   revalidatePath("/account/wallet");
   revalidatePath("/store");
+  revalidatePath("/account");
 }
 
 async function applyStatusChange(
@@ -102,12 +107,23 @@ async function applyStatusChange(
     if (status !== "CANCELLED") {
       throw new Error("A cancelled order cannot be reopened. Create a new order instead.");
     }
-    return;
+    return null;
   }
 
   if (status !== "CANCELLED") {
     await tx.order.update({ where: { id: order.id }, data: { status } });
-    return;
+    // Completing an order pays the loyalty cashback (once, even if set again later).
+    if (status === "COMPLETED") {
+      return awardCashback(tx, {
+        userId: order.userId,
+        sourceType: "ORDER",
+        sourceId: order.id,
+        currency: order.currency,
+        amount: order.total,
+        label: `order #${order.id}`,
+      });
+    }
+    return null;
   }
 
   // Claim the cancellation atomically so concurrent admins cannot refund/restock twice.
@@ -116,7 +132,7 @@ async function applyStatusChange(
     data: { status: "CANCELLED" },
   });
   if (claim.count !== 1) {
-    return;
+    return null;
   }
 
   for (const item of order.items) {
@@ -139,4 +155,8 @@ async function applyStatusChange(
       createdById: adminId,
     });
   }
+
+  // A completed order that gets cancelled loses the cashback it earned.
+  await reverseCashback(tx, { sourceType: "ORDER", sourceId: order.id, label: `order #${order.id}`, createdById: adminId });
+  return null;
 }

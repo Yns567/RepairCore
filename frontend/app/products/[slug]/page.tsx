@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import ProductPurchase from "@/components/cart/ProductPurchase";
 import ProductCard from "@/components/store/ProductCard";
 import ProductGallery from "@/components/store/ProductGallery";
+import CashbackHint from "@/components/loyalty/CashbackHint";
 import { translateCategory } from "@/lib/catalog";
 import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
@@ -83,6 +84,8 @@ export default async function ProductPage({ params }: PageProps) {
               <span>{t("product.deliveryTime")}:</span>
               <span dir="auto" className="font-semibold text-white">{product.deliveryTime}</span>
             </div>
+
+            <CashbackHint price={product.price.toString()} currency="MAD" />
 
             <ProductPurchase productId={product.id} stock={isAvailable ? product.stock : 0} />
 

@@ -13,14 +13,14 @@ export default async function WhyUs() {
 
   return (
     <section className="border-y border-slate-800 bg-[#0B1220]">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-14">
+      <div className="reveal mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-14">
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-10">
           {points.map((point) => {
             const Icon = point.icon;
             return (
               <div key={point.title} className="flex gap-3 md:gap-4">
-                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-slate-800 bg-[#0F1626]">
-                  <Icon size={20} className="text-blue-400" />
+                <div className="icon-3d grid h-11 w-11 shrink-0 place-items-center rounded-xl">
+                  <Icon size={20} className="text-white" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-white">{t(point.title)}</h3>

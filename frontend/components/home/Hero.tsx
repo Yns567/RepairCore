@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { Wrench, ShieldCheck, Zap, MessageCircle } from "lucide-react";
+import { ShieldCheck, Zap, MessageCircle } from "lucide-react";
+import HeroScene from "@/components/home/HeroScene";
 import { getT } from "@/lib/i18n/server";
 
 export default async function Hero() {
-  const { t } = await getT();
+  const { t, locale } = await getT();
   return (
     <section className="relative overflow-hidden bg-[#070D18]">
       {/* subtle grid backdrop */}
@@ -15,22 +16,32 @@ export default async function Hero() {
           backgroundSize: "40px 40px",
         }}
       />
+      <div className="grid-floor opacity-50" aria-hidden />
       <div
         className="pointer-events-none absolute -top-40 end-[-10%] h-[420px] w-[420px] rounded-full bg-blue-600/20 blur-[120px] md:h-[520px] md:w-[520px]"
         aria-hidden
       />
+      <div
+        className="pointer-events-none absolute -bottom-40 start-[-10%] h-[360px] w-[360px] rounded-full bg-cyan-500/10 blur-[120px]"
+        aria-hidden
+      />
 
-      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-4 py-8 sm:px-6 md:py-20 lg:grid-cols-2 lg:py-24">
+      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-4 px-4 pb-6 pt-8 sm:px-6 md:py-16 lg:grid-cols-2 lg:gap-12 lg:py-20">
         <div>
           <span className="inline-flex items-center gap-2 rounded-full border border-slate-800 bg-[#0F1626] px-3 py-1 text-[11px] font-medium text-slate-400 sm:text-xs">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            </span>
             {t("hero.badge")}
           </span>
 
-          <h1 className="mt-4 text-[28px] font-extrabold leading-[1.2] tracking-tight text-white sm:text-4xl md:mt-6 md:text-5xl lg:text-6xl">
+          <h1 className="mt-4 text-[28px] font-extrabold leading-[1.25] tracking-tight text-white sm:text-4xl md:mt-6 md:text-5xl lg:text-6xl">
             {t("hero.title1")}
             <br />
-            {t("hero.title2")}
+            <span className="bg-gradient-to-r from-blue-400 via-sky-300 to-cyan-300 bg-clip-text text-transparent">
+              {t("hero.title2")}
+            </span>
           </h1>
 
           <p className="mt-3 max-w-lg text-sm leading-relaxed text-slate-400 md:mt-6 md:text-lg">
@@ -40,13 +51,13 @@ export default async function Hero() {
           <div className="mt-5 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap md:mt-8 md:gap-4">
             <Link
               href="/store"
-              className="rounded-lg bg-blue-600 px-5 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-blue-900/30 transition-colors hover:bg-blue-500 md:px-6"
+              className="rounded-lg bg-gradient-to-b from-blue-500 to-blue-700 px-5 py-3 text-center text-sm font-semibold text-white shadow-[0_4px_0_#172554,0_12px_24px_-6px_rgba(37,99,235,0.6)] transition active:translate-y-[3px] active:shadow-[0_1px_0_#172554] hover:from-blue-400 hover:to-blue-600 md:px-6"
             >
               {t("hero.shopHardware")}
             </Link>
             <Link
               href="/services"
-              className="rounded-lg border border-slate-700 px-5 py-3 text-center text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white md:px-6"
+              className="rounded-lg border border-slate-700 bg-white/[0.03] px-5 py-3 text-center text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white md:px-6"
             >
               {t("nav.gsmServices")}
             </Link>
@@ -59,36 +70,19 @@ export default async function Hero() {
           </div>
         </div>
 
-        {/* Signature visual: diagnostic terminal. Desktop only, it costs too much height on phones. */}
-        <div className="relative mx-auto hidden w-full max-w-md lg:block">
-          <div className="absolute -inset-4 -z-10 rounded-3xl bg-blue-600/10 blur-2xl" />
-
-          <div dir="ltr" className="overflow-hidden rounded-2xl border border-slate-800 bg-[#0B1220] shadow-2xl shadow-black/40">
-            <div className="flex items-center gap-2 border-b border-slate-800 bg-[#0F1626] px-4 py-3">
-              <span className="h-2.5 w-2.5 rounded-full bg-rose-500/80" />
-              <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
-              <span className="ml-3 flex items-center gap-1.5 font-mono text-[11px] text-slate-500">
-                <Wrench size={12} /> diagnostics.repaircore
-              </span>
-            </div>
-
-            <div className="space-y-2.5 p-5 font-mono text-[13px]">
-              <p className="text-slate-500">&gt; running full board scan...</p>
-              <p className="text-emerald-400">CPU / SoC ................ OK</p>
-              <p className="text-emerald-400">Battery health ........... 91%</p>
-              <p className="text-amber-400">Charging IC .......... check</p>
-              <p className="text-emerald-400">Display driver ........... OK</p>
-              <p className="text-slate-500">
-                &gt; unlock module: <span className="text-blue-400">Z3X</span> connected
-              </p>
-              <p className="flex items-center gap-1 text-slate-300">
-                &gt; ready for repair
-                <span className="ml-1 inline-block h-3.5 w-2 animate-pulse bg-blue-400" />
-              </p>
-            </div>
-          </div>
-        </div>
+        <HeroScene
+          rtl={locale === "ar"}
+          labels={{
+            balance: t("hero3d.balance"),
+            orders: t("hero3d.orders"),
+            delivered: t("hero3d.delivered"),
+            fast: t("hero3d.fast"),
+            secure: t("hero3d.secure"),
+            code: t("hero3d.code"),
+            done: t("hero3d.done"),
+            processing: t("hero3d.processing"),
+          }}
+        />
       </div>
     </section>
   );

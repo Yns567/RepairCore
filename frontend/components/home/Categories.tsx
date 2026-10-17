@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ShoppingBag, Cpu, Wrench, GraduationCap, ArrowRight, Smartphone, Coins, KeyRound } from "lucide-react";
+import Tilt from "@/components/ui/Tilt";
 import { getT } from "@/lib/i18n/server";
 import type { MessageKey } from "@/lib/i18n/messages";
 
@@ -18,7 +19,7 @@ export default async function Categories() {
   const { t } = await getT();
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-14">
+    <section className="reveal mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-14">
       <div className="mb-4 md:mb-8">
         <span className="text-[11px] font-semibold uppercase tracking-widest text-blue-500 sm:text-xs">{t("cat.kicker")}</span>
         <h2 className="mt-1 text-xl font-bold tracking-tight text-white md:mt-2 md:text-3xl">{t("cat.title")}</h2>
@@ -28,12 +29,12 @@ export default async function Categories() {
         {categories.map((cat) => {
           const Icon = cat.icon;
           return (
+            <Tilt key={cat.title} className="rounded-xl">
             <Link
-              key={cat.title}
               href={cat.href}
-              className="group flex flex-col items-center gap-2 rounded-xl border border-slate-800 bg-[#0B1220] p-2.5 text-center transition hover:border-blue-600/60 sm:items-start sm:p-5 sm:text-start md:hover:-translate-y-0.5"
+              className="group flex h-full flex-col items-center gap-2 rounded-xl border border-slate-800 bg-gradient-to-b from-[#0E1729] to-[#0B1220] p-2.5 text-center transition hover:border-blue-600/60 sm:items-start sm:p-5 sm:text-start"
             >
-              <span className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-800 shadow-[0_0_16px_rgba(37,99,235,.3)] sm:h-12 sm:w-12">
+              <span className="icon-3d grid h-11 w-11 place-items-center rounded-xl sm:h-12 sm:w-12">
                 <Icon size={21} className="text-white" strokeWidth={2.2} />
               </span>
               <span className="text-[11px] font-semibold leading-tight text-white sm:mt-2 sm:text-base sm:font-bold">{t(cat.title)}</span>
@@ -42,6 +43,7 @@ export default async function Categories() {
                 {t("cat.open")} <ArrowRight size={15} className="rtl:rotate-180" />
               </span>
             </Link>
+            </Tilt>
           );
         })}
       </div>

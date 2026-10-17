@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { getT } from "@/lib/i18n/server";
 import { requestPasswordReset, resetPassword } from "@/lib/password-reset";
+import { rateLimit, requestIp } from "@/lib/rate-limit";
 
 export type FormState = { status: "idle" | "success" | "error"; message?: string };
 
@@ -10,6 +11,9 @@ export async function requestResetAction(_previous: FormState, formData: FormDat
   const { t } = await getT();
   const email = z.string().trim().email().max(254).safeParse(formData.get("email"));
   if (!email.success) return { status: "error", message: t("auth.invalidEmail") };
+  if (!(await rateLimit(`reset:${await requestIp()}`, 5, 15 * 60 * 1000))) {
+    return { status: "error", message: t("auth.tooMany") };
+  }
 
   try {
     await requestPasswordReset(email.data);
@@ -32,6 +36,9 @@ const resetSchema = z
 
 export async function resetPasswordAction(_previous: FormState, formData: FormData): Promise<FormState> {
   const { t } = await getT();
+  if (!(await rateLimit(`reset-submit:${await requestIp()}`, 10, 15 * 60 * 1000))) {
+    return { status: "error", message: t("auth.tooMany") };
+  }
   const parsed = resetSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     return { status: "error", message: t("auth.passwordRules") };

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import AddToCartButton from "@/components/cart/AddToCartButton";
+import Tilt from "@/components/ui/Tilt";
 import { translateCategory } from "@/lib/catalog";
 import { getT } from "@/lib/i18n/server";
 
@@ -27,7 +28,8 @@ export default async function ProductCard({
   const { t } = await getT();
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-slate-800 bg-[#0b1220] transition hover:-translate-y-0.5 hover:border-blue-500/70 hover:shadow-lg hover:shadow-blue-950/40">
+    <Tilt className="h-full rounded-xl" max={6}>
+    <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-slate-800 bg-[#0b1220] transition hover:border-blue-500/70 hover:shadow-xl hover:shadow-blue-950/50">
       <Link href={`/products/${slug}`} className="relative block aspect-square bg-white">
         <Image
           src={image || "/placeholder.svg"}
@@ -68,5 +70,6 @@ export default async function ProductCard({
         </div>
       </div>
     </article>
+    </Tilt>
   );
 }

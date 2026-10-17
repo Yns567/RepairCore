@@ -17,7 +17,7 @@ export default async function PopularServices() {
   if (services.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-12">
+    <section className="reveal mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-12">
       <div className="mb-4 flex items-end justify-between gap-4 md:mb-6">
         <div>
           <span className="text-[11px] font-semibold uppercase tracking-widest text-blue-500 sm:text-xs">{t("home.servicesKicker")}</span>

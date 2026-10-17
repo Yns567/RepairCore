@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { clearLoginFailures, isLoginLocked, recordLoginFailure } from "@/lib/login-throttle";
 import { prisma } from "@/lib/prisma";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 import authConfig from "./auth.config";
 
 // This file is safe to import Prisma/bcrypt in: it is only ever loaded from
@@ -22,12 +23,14 @@ export const {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         const email = (credentials?.email as string | undefined)?.trim().toLowerCase();
         const password = credentials?.password as string | undefined;
 
         if (!email || !password) return null;
         if (await isLoginLocked(email)) return null;
+        // Per-IP cap on top of the per-email lock, against password spraying across accounts.
+        if (!(await rateLimit(`login:${clientIp(request.headers)}`, 30, 15 * 60 * 1000))) return null;
 
         const user = await prisma.user.findUnique({ where: { email } });
 
